@@ -861,6 +861,31 @@ function init() {
     input.type = input.type === 'password' ? 'text' : 'password';
   });
 
+  // ── Demo login: auto-fill credentials and submit ──
+  document.getElementById('demo-login-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    document.getElementById('login-email').value    = 'demo@jobpulse.com';
+    document.getElementById('login-password').value = 'Demo@1234';
+    const btn = document.getElementById('login-submit');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '⏳ Logging in...';
+    btn.disabled = true;
+    try {
+      const data = await api.post('/auth/login', {
+        email: 'demo@jobpulse.com',
+        password: 'Demo@1234',
+      });
+      saveAuth(data.token, data.user);
+      closeModal('auth-modal-overlay');
+      showToast(`Welcome, ${data.user.full_name}! 🎉`, 'success');
+    } catch (err) {
+      showToast(err.message || 'Demo login failed', 'error');
+    } finally {
+      btn.innerHTML = orig;
+      btn.disabled = false;
+    }
+  });
+
   // Password strength checker
   document.getElementById('register-password').addEventListener('input', (e) => {
     checkPasswordStrength(e.target.value);

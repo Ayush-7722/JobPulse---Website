@@ -1,463 +1,494 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Discover top jobs and internships from leading companies. Search, filter, and apply to your dream role in tech, design, marketing, and more.">
-  <title>JobPulse — Discover Jobs & Internships</title>
-  <link rel="stylesheet" href="index.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Discover top jobs and internships from leading companies. Search, filter, and apply to your dream role in tech, design, marketing, and more.">
+    <title>JobPulse — Discover Jobs & Internships</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
 </head>
+
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar" id="navbar">
-    <div class="container">
-      <a href="#" class="nav-logo" id="nav-logo">
-        <span class="nav-logo-icon">🚀</span>
-        JobPulse
-      </a>
-      <div class="nav-links" id="nav-links">
-        <a href="#" class="active" data-section="home">Home</a>
-        <a href="#jobs" data-section="jobs">Browse Jobs</a>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="#" class="nav-logo" id="nav-logo">
+                <span class="nav-logo-icon">🚀</span>
+                JobPulse
+            </a>
+            <div class="nav-links" id="nav-links">
+                <a href="#" class="active" data-section="home">Home</a>
+                <a href="#jobs" data-section="jobs">Browse Jobs</a>
+                <a href="#live-jobs-section" data-section="live">🌐 Live Jobs</a>
+                <a href="#categories-section" data-section="categories">Categories</a>
+            </div>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+                <!-- Auth: Logged Out -->
+                <div class="auth-buttons" id="auth-buttons">
+                    <button class="btn btn-secondary" id="login-btn" style="padding: 8px 20px; font-size: 0.85rem;">Log
+                        In</button>
+                    <button class="btn btn-primary" id="signup-btn" style="padding: 8px 20px; font-size: 0.85rem;">Sign
+                        Up</button>
+                </div>
+                <!-- Auth: Logged In -->
+                <div class="user-menu" id="user-menu" style="display: none;">
+                    <button class="user-menu-btn" id="user-menu-btn">
+                        <span class="user-avatar" id="user-avatar">A</span>
+                        <span class="user-name" id="user-name">User</span>
+                        <span class="user-chevron">▾</span>
+                    </button>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <div class="user-dropdown-header" id="user-dropdown-header"></div>
+                        <a href="#" id="my-applications-btn">📋 My Applications</a>
+                        <a href="#" id="change-password-btn">🔒 Change Password</a>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="#" id="logout-btn" class="logout-link">🚪 Log Out</a>
+                    </div>
+                </div>
+                <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle menu">☰</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav -->
+    <div class="mobile-nav" id="mobile-nav">
+        <a href="#" data-section="home">🏠 Home</a>
+        <a href="#jobs" data-section="jobs">💼 Browse Jobs</a>
         <a href="#live-jobs-section" data-section="live">🌐 Live Jobs</a>
-        <a href="#categories-section" data-section="categories">Categories</a>
-      </div>
-      <div class="nav-actions">
-        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
-        <!-- Auth: Logged Out -->
-        <div class="auth-buttons" id="auth-buttons">
-          <button class="btn btn-secondary" id="login-btn" style="padding: 8px 20px; font-size: 0.85rem;">Log In</button>
-          <button class="btn btn-primary" id="signup-btn" style="padding: 8px 20px; font-size: 0.85rem;">Sign Up</button>
-        </div>
-        <!-- Auth: Logged In -->
-        <div class="user-menu" id="user-menu" style="display: none;">
-          <button class="user-menu-btn" id="user-menu-btn">
-            <span class="user-avatar" id="user-avatar">A</span>
-            <span class="user-name" id="user-name">User</span>
-            <span class="user-chevron">▾</span>
-          </button>
-          <div class="user-dropdown" id="user-dropdown">
-            <div class="user-dropdown-header" id="user-dropdown-header"></div>
-            <a href="#" id="my-applications-btn">📋 My Applications</a>
-            <a href="#" id="change-password-btn">🔒 Change Password</a>
-            <div class="user-dropdown-divider"></div>
-            <a href="#" id="logout-btn" class="logout-link">🚪 Log Out</a>
-          </div>
-        </div>
-        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle menu">☰</button>
-      </div>
+        <a href="#categories-section" data-section="categories">📂 Categories</a>
     </div>
-  </nav>
 
-  <!-- Mobile Nav -->
-  <div class="mobile-nav" id="mobile-nav">
-    <a href="#" data-section="home">🏠 Home</a>
-    <a href="#jobs" data-section="jobs">💼 Browse Jobs</a>
-    <a href="#live-jobs-section" data-section="live">🌐 Live Jobs</a>
-    <a href="#categories-section" data-section="categories">📂 Categories</a>
-  </div>
-
-  <!-- Hero -->
-  <section class="hero" id="hero">
-    <div class="container">
-      <div class="hero-content">
-        <div class="hero-badge">
-          <span class="pulse-dot"></span>
-          Thousands of opportunities updated daily
-        </div>
-        <h1>
-          Find Your Dream<br>
-          <span class="gradient-text">Job & Internship</span>
-        </h1>
-        <p>
-          Discover opportunities from the world's top companies. Whether you're starting your career or making your next move — we've got you covered.
-        </p>
-        <div class="search-container">
-          <div class="search-bar" id="search-bar">
-            <span class="search-icon">🔍</span>
-            <input
-              type="text"
-              id="hero-search"
-              placeholder="Search by title, company, or skills..."
-              autocomplete="off"
-            >
-            <button class="search-btn" id="hero-search-btn">Search Jobs</button>
-          </div>
-        </div>
-        <div class="hero-stats" id="hero-stats">
-          <div class="stat-item">
-            <div class="stat-number" id="stat-jobs">-</div>
-            <div class="stat-label">Active Jobs</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number" id="stat-internships">-</div>
-            <div class="stat-label">Internships</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number" id="stat-companies">-</div>
-            <div class="stat-label">Companies</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-number" id="stat-remote">-</div>
-            <div class="stat-label">Remote Jobs</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Featured Jobs -->
-  <section class="section" id="featured-section">
-    <div class="container">
-      <div class="section-header">
-        <h2>⭐ Featured Opportunities</h2>
-        <a href="#jobs" class="view-all" id="view-all-btn">View all jobs →</a>
-      </div>
-      <div class="jobs-grid" id="featured-grid">
-        <!-- Featured jobs loaded dynamically -->
-      </div>
-    </div>
-  </section>
-
-  <!-- Categories -->
-  <section class="section" id="categories-section" style="background: var(--bg-tertiary);">
-    <div class="container">
-      <div class="section-header">
-        <h2>📂 Browse by Category</h2>
-      </div>
-      <div class="categories-grid" id="categories-grid">
-        <!-- Categories loaded dynamically -->
-      </div>
-    </div>
-  </section>
-
-  <!-- ── Live Jobs (External APIs) ── -->
-  <section class="section" id="live-jobs-section">
-    <div class="container">
-      <div class="section-header live-jobs-header">
-        <div>
-          <h2>🌐 Live Jobs from the Web</h2>
-          <p class="live-jobs-subtitle">Real-time opportunities from LinkedIn, Remotive &amp; more</p>
-        </div>
-        <div class="live-jobs-actions">
-          <div class="live-source-badges" id="live-source-badges">
-            <span class="source-badge source-all active" data-source="">All Sources</span>
-            <span class="source-badge source-remotive" data-source="remotive">📡 Remotive</span>
-            <span class="source-badge source-linkedin" data-source="linkedin">💼 LinkedIn</span>
-          </div>
-          <button class="btn btn-secondary live-refresh-btn" id="live-refresh-btn" style="font-size:0.8rem;padding:7px 14px;">
-            🔄 Refresh
-          </button>
-        </div>
-      </div>
-
-      <!-- Live Filters -->
-      <div class="live-filters" id="live-filters">
-        <div class="live-search-wrap">
-          <span class="live-search-icon">🔍</span>
-          <input type="text" class="live-search-input" id="live-search" placeholder="Search live jobs by title, skill or company…">
-        </div>
-        <div class="filter-group">
-          <button class="filter-btn active" data-live-type="">All</button>
-          <button class="filter-btn" data-live-type="Full-Time">Full-Time</button>
-          <button class="filter-btn" data-live-type="Part-Time">Part-Time</button>
-          <button class="filter-btn" data-live-type="Contract">Contract</button>
-          <button class="filter-btn" data-live-type="Internship">Internship</button>
-          <button class="filter-btn" data-live-type="Freelance">Freelance</button>
-        </div>
-      </div>
-
-      <!-- Status bar -->
-      <div class="live-status-bar" id="live-status-bar"></div>
-
-      <!-- Live Jobs Grid -->
-      <div class="live-jobs-grid" id="live-jobs-grid"></div>
-
-      <!-- Live Pagination -->
-      <div class="pagination" id="live-pagination"></div>
-    </div>
-  </section>
-
-  <!-- All Jobs -->
-  <section class="section" id="jobs">
-    <div class="container">
-      <div class="section-header">
-        <h2>💼 All Opportunities</h2>
-      </div>
-
-      <!-- Filters -->
-      <div class="filters-bar" id="filters-bar">
-        <div class="filter-group" id="type-filters">
-          <button class="filter-btn active" data-type="">All Types</button>
-          <button class="filter-btn" data-type="Full-Time">Full-Time</button>
-          <button class="filter-btn" data-type="Part-Time">Part-Time</button>
-          <button class="filter-btn" data-type="Internship">Internship</button>
-          <button class="filter-btn" data-type="Contract">Contract</button>
-        </div>
-        <div class="filter-group">
-          <select class="filter-select" id="work-mode-filter">
-            <option value="">All Modes</option>
-            <option value="Remote">🌍 Remote</option>
-            <option value="On-site">🏢 On-site</option>
-            <option value="Hybrid">🔀 Hybrid</option>
-          </select>
-          <select class="filter-select" id="sort-filter">
-            <option value="newest">Newest First</option>
-            <option value="salary_high">Highest Salary</option>
-            <option value="salary_low">Lowest Salary</option>
-            <option value="deadline">Deadline Soon</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="results-info" id="results-info"></div>
-
-      <!-- Jobs Grid -->
-      <div class="jobs-grid" id="jobs-grid">
-        <!-- Jobs loaded dynamically -->
-      </div>
-
-      <!-- Pagination -->
-      <div class="pagination" id="pagination"></div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <a href="#" class="nav-logo">
-            <span class="nav-logo-icon">🚀</span>
-            JobPulse
-          </a>
-          <p>Connecting talent with opportunity. Find your dream job or internship from the world's top companies.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Platform</h4>
-          <a href="#jobs">Browse Jobs</a>
-          <a href="#categories-section">Categories</a>
-          <a href="#featured-section">Featured</a>
-        </div>
-        <div class="footer-col">
-          <h4>Job Types</h4>
-          <a href="#" class="footer-type-link" data-type="Full-Time">Full-Time</a>
-          <a href="#" class="footer-type-link" data-type="Internship">Internships</a>
-          <a href="#" class="footer-type-link" data-type="Remote">Remote Jobs</a>
-          <a href="#" class="footer-type-link" data-type="Contract">Contract</a>
-        </div>
-        <div class="footer-col">
-          <h4>Resources</h4>
-          <a href="#">Career Tips</a>
-          <a href="#">Resume Builder</a>
-          <a href="#">Interview Prep</a>
-          <a href="#">Salary Guide</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>© 2026 JobPulse. All rights reserved.</span>
-        <span>Built with ❤️ for job seekers everywhere</span>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Job Detail Modal -->
-  <div class="modal-overlay" id="job-modal-overlay">
-    <div class="modal" id="job-modal">
-      <div class="modal-header">
-        <div class="modal-header-info" id="modal-header-info">
-          <!-- Filled dynamically -->
-        </div>
-        <button class="modal-close" id="modal-close">✕</button>
-      </div>
-      <div class="modal-body" id="modal-body">
-        <!-- Filled dynamically -->
-      </div>
-      <div class="modal-footer" id="modal-footer">
-        <!-- Filled dynamically -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Apply Modal -->
-  <div class="modal-overlay" id="apply-modal-overlay">
-    <div class="modal" id="apply-modal">
-      <div class="modal-header">
-        <div>
-          <h2 id="apply-modal-title">Apply for this Position</h2>
-          <p class="company-name" id="apply-modal-subtitle"></p>
-        </div>
-        <button class="modal-close" id="apply-modal-close">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="auth-info-banner" id="apply-auth-info">
-          <span>🔒</span> Applying as <strong id="apply-as-name"></strong> (<span id="apply-as-email"></span>)
-        </div>
-        <form class="apply-form" id="apply-form" enctype="multipart/form-data">
-          <input type="hidden" id="apply-job-id" name="job_id">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Phone</label>
-              <input type="tel" class="form-input" id="apply-phone" name="phone" placeholder="+1 (555) 000-0000">
+    <!-- Hero -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="pulse-dot"></span>
+                    Thousands of opportunities updated daily
+                </div>
+                <h1>
+                    Find Your Dream<br>
+                    <span class="gradient-text">Job & Internship</span>
+                </h1>
+                <p>
+                    Discover opportunities from the world's top companies. Whether you're starting your career or making
+                    your next move — we've got you covered.
+                </p>
+                <div class="search-container">
+                    <div class="search-bar" id="search-bar">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="hero-search" placeholder="Search by title, company, or skills..."
+                            autocomplete="off">
+                        <button class="search-btn" id="hero-search-btn">Search Jobs</button>
+                    </div>
+                </div>
+                <div class="hero-stats" id="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="stat-jobs">-</div>
+                        <div class="stat-label">Active Jobs</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="stat-internships">-</div>
+                        <div class="stat-label">Internships</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="stat-companies">-</div>
+                        <div class="stat-label">Companies</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="stat-remote">-</div>
+                        <div class="stat-label">Remote Jobs</div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-              <label>LinkedIn URL</label>
-              <input type="url" class="form-input" id="apply-linkedin" name="linkedin_url" placeholder="https://linkedin.com/in/johndoe">
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Portfolio URL</label>
-            <input type="url" class="form-input" id="apply-portfolio" name="portfolio_url" placeholder="https://johndoe.com">
-          </div>
-          <div class="form-group">
-            <label>Resume <span class="required">*</span></label>
-            <div class="file-upload" id="file-upload">
-              <input type="file" id="apply-resume" name="resume" accept=".pdf,.doc,.docx" required>
-              <div class="file-upload-icon">📄</div>
-              <div class="file-upload-text">Click or drag to upload your resume</div>
-              <div class="file-upload-hint">PDF, DOC, or DOCX — Max 5MB</div>
-              <div class="file-name" id="file-name" style="display: none;"></div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Cover Letter</label>
-            <textarea class="form-input" id="apply-cover-letter" name="cover_letter" placeholder="Tell us why you're a great fit for this role..."></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary btn-lg" id="apply-submit" style="width: 100%; justify-content: center;">
-            🚀 Submit Application
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Auth Modal (Login / Register) -->
-  <div class="modal-overlay" id="auth-modal-overlay">
-    <div class="modal" id="auth-modal" style="max-width: 480px;">
-      <div class="modal-header">
-        <div>
-          <h2 id="auth-modal-title">Log In</h2>
-          <p class="company-name" id="auth-modal-subtitle">Welcome back to JobPulse</p>
         </div>
-        <button class="modal-close" id="auth-modal-close">✕</button>
-      </div>
-      <div class="modal-body">
-        <!-- Login Form -->
-        <form class="apply-form" id="login-form">
-          <div class="form-group">
-            <label>Email <span class="required">*</span></label>
-            <input type="email" class="form-input" id="login-email" placeholder="your@email.com" required autocomplete="email">
-          </div>
-          <div class="form-group">
-            <label>Password <span class="required">*</span></label>
-            <div class="password-field">
-              <input type="password" class="form-input" id="login-password" placeholder="Enter your password" required autocomplete="current-password">
-              <button type="button" class="password-toggle" id="login-pw-toggle">👁️</button>
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary btn-lg" id="login-submit" style="width: 100%; justify-content: center;">
-            🔐 Log In
-          </button>
-          <p class="auth-switch">
-            Don't have an account? <a href="#" id="switch-to-register">Sign up</a>
-          </p>
-        </form>
+    </section>
 
-        <!-- Register Form -->
-        <form class="apply-form" id="register-form" style="display: none;">
-          <div class="form-group">
-            <label>Full Name <span class="required">*</span></label>
-            <input type="text" class="form-input" id="register-name" placeholder="John Doe" required autocomplete="name">
-          </div>
-          <div class="form-group">
-            <label>Email <span class="required">*</span></label>
-            <input type="email" class="form-input" id="register-email" placeholder="your@email.com" required autocomplete="email">
-          </div>
-          <div class="form-group">
-            <label>Phone</label>
-            <input type="tel" class="form-input" id="register-phone" placeholder="+1 (555) 000-0000" autocomplete="tel">
-          </div>
-          <div class="form-group">
-            <label>Password <span class="required">*</span></label>
-            <div class="password-field">
-              <input type="password" class="form-input" id="register-password" placeholder="Create a strong password" required autocomplete="new-password">
-              <button type="button" class="password-toggle" id="register-pw-toggle">👁️</button>
+    <!-- Featured Jobs -->
+    <section class="section" id="featured-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>⭐ Featured Opportunities</h2>
+                <a href="#jobs" class="view-all" id="view-all-btn">View all jobs →</a>
             </div>
-            <div class="password-strength" id="password-strength">
-              <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
-              <span class="strength-text" id="strength-text"></span>
+            <div class="jobs-grid" id="featured-grid">
+                <!-- Featured jobs loaded dynamically -->
             </div>
-            <div class="password-rules" id="password-rules">
-              <span id="rule-length">✗ 8+ characters</span>
-              <span id="rule-upper">✗ Uppercase</span>
-              <span id="rule-lower">✗ Lowercase</span>
-              <span id="rule-number">✗ Number</span>
-              <span id="rule-special">✗ Special char</span>
+        </div>
+    </section>
+
+    <!-- Categories -->
+    <section class="section" id="categories-section" style="background: var(--bg-tertiary);">
+        <div class="container">
+            <div class="section-header">
+                <h2>📂 Browse by Category</h2>
             </div>
-          </div>
-          <div class="form-group">
-            <label>Confirm Password <span class="required">*</span></label>
-            <div class="password-field">
-              <input type="password" class="form-input" id="register-confirm" placeholder="Confirm your password" required autocomplete="new-password">
+            <div class="categories-grid" id="categories-grid">
+                <!-- Categories loaded dynamically -->
             </div>
-          </div>
-          <button type="submit" class="btn btn-primary btn-lg" id="register-submit" style="width: 100%; justify-content: center;">
-            🚀 Create Account
-          </button>
-          <p class="auth-switch">
-            Already have an account? <a href="#" id="switch-to-login">Log in</a>
-          </p>
-        </form>
-      </div>
+        </div>
+    </section>
+
+    <!-- ── Live Jobs (External APIs) ── -->
+    <section class="section" id="live-jobs-section">
+        <div class="container">
+            <div class="section-header live-jobs-header">
+                <div>
+                    <h2>🌐 Live Jobs from the Web</h2>
+                    <p class="live-jobs-subtitle">Real-time opportunities from LinkedIn, Remotive &amp; more</p>
+                </div>
+                <div class="live-jobs-actions">
+                    <div class="live-source-badges" id="live-source-badges">
+                        <span class="source-badge source-all active" data-source="">All Sources</span>
+                        <span class="source-badge source-remotive" data-source="remotive">📡 Remotive</span>
+                        <span class="source-badge source-linkedin" data-source="linkedin">💼 LinkedIn</span>
+                    </div>
+                    <button class="btn btn-secondary live-refresh-btn" id="live-refresh-btn"
+                        style="font-size:0.8rem;padding:7px 14px;">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live Filters -->
+            <div class="live-filters" id="live-filters">
+                <div class="live-search-wrap">
+                    <span class="live-search-icon">🔍</span>
+                    <input type="text" class="live-search-input" id="live-search"
+                        placeholder="Search live jobs by title, skill or company…">
+                </div>
+                <div class="filter-group">
+                    <button class="filter-btn active" data-live-type="">All</button>
+                    <button class="filter-btn" data-live-type="Full-Time">Full-Time</button>
+                    <button class="filter-btn" data-live-type="Part-Time">Part-Time</button>
+                    <button class="filter-btn" data-live-type="Contract">Contract</button>
+                    <button class="filter-btn" data-live-type="Internship">Internship</button>
+                    <button class="filter-btn" data-live-type="Freelance">Freelance</button>
+                </div>
+            </div>
+
+            <!-- Status bar -->
+            <div class="live-status-bar" id="live-status-bar"></div>
+
+            <!-- Live Jobs Grid -->
+            <div class="live-jobs-grid" id="live-jobs-grid"></div>
+
+            <!-- Live Pagination -->
+            <div class="pagination" id="live-pagination"></div>
+        </div>
+    </section>
+
+    <!-- All Jobs -->
+    <section class="section" id="jobs">
+        <div class="container">
+            <div class="section-header">
+                <h2>💼 All Opportunities</h2>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-bar" id="filters-bar">
+                <div class="filter-group" id="type-filters">
+                    <button class="filter-btn active" data-type="">All Types</button>
+                    <button class="filter-btn" data-type="Full-Time">Full-Time</button>
+                    <button class="filter-btn" data-type="Part-Time">Part-Time</button>
+                    <button class="filter-btn" data-type="Internship">Internship</button>
+                    <button class="filter-btn" data-type="Contract">Contract</button>
+                </div>
+                <div class="filter-group">
+                    <select class="filter-select" id="work-mode-filter">
+                        <option value="">All Modes</option>
+                        <option value="Remote">🌍 Remote</option>
+                        <option value="On-site">🏢 On-site</option>
+                        <option value="Hybrid">🔀 Hybrid</option>
+                    </select>
+                    <select class="filter-select" id="sort-filter">
+                        <option value="newest">Newest First</option>
+                        <option value="salary_high">Highest Salary</option>
+                        <option value="salary_low">Lowest Salary</option>
+                        <option value="deadline">Deadline Soon</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="results-info" id="results-info"></div>
+
+            <!-- Jobs Grid -->
+            <div class="jobs-grid" id="jobs-grid">
+                <!-- Jobs loaded dynamically -->
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="#" class="nav-logo">
+                        <span class="nav-logo-icon">🚀</span>
+                        JobPulse
+                    </a>
+                    <p>Connecting talent with opportunity. Find your dream job or internship from the world's top
+                        companies.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Platform</h4>
+                    <a href="#jobs">Browse Jobs</a>
+                    <a href="#categories-section">Categories</a>
+                    <a href="#featured-section">Featured</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Job Types</h4>
+                    <a href="#" class="footer-type-link" data-type="Full-Time">Full-Time</a>
+                    <a href="#" class="footer-type-link" data-type="Internship">Internships</a>
+                    <a href="#" class="footer-type-link" data-type="Remote">Remote Jobs</a>
+                    <a href="#" class="footer-type-link" data-type="Contract">Contract</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <a href="#">Career Tips</a>
+                    <a href="#">Resume Builder</a>
+                    <a href="#">Interview Prep</a>
+                    <a href="#">Salary Guide</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© 2026 JobPulse. All rights reserved.</span>
+                <span>Built with ❤️ for job seekers everywhere</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Job Detail Modal -->
+    <div class="modal-overlay" id="job-modal-overlay">
+        <div class="modal" id="job-modal">
+            <div class="modal-header">
+                <div class="modal-header-info" id="modal-header-info">
+                    <!-- Filled dynamically -->
+                </div>
+                <button class="modal-close" id="modal-close">✕</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Filled dynamically -->
+            </div>
+            <div class="modal-footer" id="modal-footer">
+                <!-- Filled dynamically -->
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- My Applications Modal -->
-  <div class="modal-overlay" id="applications-modal-overlay">
-    <div class="modal" id="applications-modal">
-      <div class="modal-header">
-        <h2>📋 My Applications</h2>
-        <button class="modal-close" id="applications-modal-close">✕</button>
-      </div>
-      <div class="modal-body" id="applications-modal-body">
-        <!-- Filled dynamically -->
-      </div>
+    <!-- Apply Modal -->
+    <div class="modal-overlay" id="apply-modal-overlay">
+        <div class="modal" id="apply-modal">
+            <div class="modal-header">
+                <div>
+                    <h2 id="apply-modal-title">Apply for this Position</h2>
+                    <p class="company-name" id="apply-modal-subtitle"></p>
+                </div>
+                <button class="modal-close" id="apply-modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="auth-info-banner" id="apply-auth-info">
+                    <span>🔒</span> Applying as <strong id="apply-as-name"></strong> (<span id="apply-as-email"></span>)
+                </div>
+                <form class="apply-form" id="apply-form" enctype="multipart/form-data">
+                    <input type="hidden" id="apply-job-id" name="job_id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" class="form-input" id="apply-phone" name="phone"
+                                placeholder="+1 (555) 000-0000">
+                        </div>
+                        <div class="form-group">
+                            <label>LinkedIn URL</label>
+                            <input type="url" class="form-input" id="apply-linkedin" name="linkedin_url"
+                                placeholder="https://linkedin.com/in/johndoe">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Portfolio URL</label>
+                        <input type="url" class="form-input" id="apply-portfolio" name="portfolio_url"
+                            placeholder="https://johndoe.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Resume <span class="required">*</span></label>
+                        <div class="file-upload" id="file-upload">
+                            <input type="file" id="apply-resume" name="resume" accept=".pdf,.doc,.docx" required>
+                            <div class="file-upload-icon">📄</div>
+                            <div class="file-upload-text">Click or drag to upload your resume</div>
+                            <div class="file-upload-hint">PDF, DOC, or DOCX — Max 5MB</div>
+                            <div class="file-name" id="file-name" style="display: none;"></div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Cover Letter</label>
+                        <textarea class="form-input" id="apply-cover-letter" name="cover_letter"
+                            placeholder="Tell us why you're a great fit for this role..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" id="apply-submit"
+                        style="width: 100%; justify-content: center;">
+                        🚀 Submit Application
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Change Password Modal -->
-  <div class="modal-overlay" id="password-modal-overlay">
-    <div class="modal" id="password-modal" style="max-width: 480px;">
-      <div class="modal-header">
-        <h2>🔒 Change Password</h2>
-        <button class="modal-close" id="password-modal-close">✕</button>
-      </div>
-      <div class="modal-body">
-        <form class="apply-form" id="password-form">
-          <div class="form-group">
-            <label>Current Password <span class="required">*</span></label>
-            <input type="password" class="form-input" id="current-password" placeholder="Enter current password" required>
-          </div>
-          <div class="form-group">
-            <label>New Password <span class="required">*</span></label>
-            <input type="password" class="form-input" id="new-password" placeholder="Enter new password" required>
-          </div>
-          <div class="form-group">
-            <label>Confirm New Password <span class="required">*</span></label>
-            <input type="password" class="form-input" id="confirm-new-password" placeholder="Confirm new password" required>
-          </div>
-          <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; justify-content: center;">
-            🔑 Update Password
-          </button>
-        </form>
-      </div>
+    <!-- Auth Modal (Login / Register) -->
+    <div class="modal-overlay" id="auth-modal-overlay">
+        <div class="modal" id="auth-modal" style="max-width: 480px;">
+            <div class="modal-header">
+                <div>
+                    <h2 id="auth-modal-title">Log In</h2>
+                    <p class="company-name" id="auth-modal-subtitle">Welcome back to JobPulse</p>
+                </div>
+                <button class="modal-close" id="auth-modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- Login Form -->
+                <form class="apply-form" id="login-form">
+                    <div class="form-group">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" class="form-input" id="login-email" placeholder="your@email.com" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label>Password <span class="required">*</span></label>
+                        <div class="password-field">
+                            <input type="password" class="form-input" id="login-password" placeholder="Enter your password" required autocomplete="current-password">
+                            <button type="button" class="password-toggle" id="login-pw-toggle">👁️</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" id="login-submit" style="width: 100%; justify-content: center;">
+                        🔐 Log In
+                    </button>
+                    <!-- Demo hint -->
+                    <div style="margin-top:12px;padding:10px 14px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:10px;text-align:center;font-size:13px;">
+                        🧪 <strong>Demo account:</strong>
+                        <code style="background:rgba(99,102,241,0.12);padding:1px 6px;border-radius:4px;">demo@jobpulse.com</code> /
+                        <code style="background:rgba(99,102,241,0.12);padding:1px 6px;border-radius:4px;">Demo@1234</code>
+                        <br>
+                        <a href="#" id="demo-login-btn" style="color:var(--primary,#6366f1);font-weight:600;text-decoration:none;margin-top:5px;display:inline-block;">⚡ Click to auto-login with demo →</a>
+                    </div>
+                    <p class="auth-switch">
+                        Don't have an account? <a href="#" id="switch-to-register">Sign up</a>
+                    </p>
+                </form>
+
+                <!-- Register Form -->
+                <form class="apply-form" id="register-form" style="display: none;">
+                    <div class="form-group">
+                        <label>Full Name <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="register-name" placeholder="John Doe" required
+                            autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" class="form-input" id="register-email" placeholder="your@email.com" required
+                            autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" class="form-input" id="register-phone" placeholder="+1 (555) 000-0000"
+                            autocomplete="tel">
+                    </div>
+                    <div class="form-group">
+                        <label>Password <span class="required">*</span></label>
+                        <div class="password-field">
+                            <input type="password" class="form-input" id="register-password"
+                                placeholder="Create a strong password" required autocomplete="new-password">
+                            <button type="button" class="password-toggle" id="register-pw-toggle">👁️</button>
+                        </div>
+                        <div class="password-strength" id="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="strength-fill"></div>
+                            </div>
+                            <span class="strength-text" id="strength-text"></span>
+                        </div>
+                        <div class="password-rules" id="password-rules">
+                            <span id="rule-length">✗ 8+ characters</span>
+                            <span id="rule-upper">✗ Uppercase</span>
+                            <span id="rule-lower">✗ Lowercase</span>
+                            <span id="rule-number">✗ Number</span>
+                            <span id="rule-special">✗ Special char</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password <span class="required">*</span></label>
+                        <div class="password-field">
+                            <input type="password" class="form-input" id="register-confirm"
+                                placeholder="Confirm your password" required autocomplete="new-password">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" id="register-submit"
+                        style="width: 100%; justify-content: center;">
+                        🚀 Create Account
+                    </button>
+                    <p class="auth-switch">
+                        Already have an account? <a href="#" id="switch-to-login">Log in</a>
+                    </p>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Toast Container -->
-  <div class="toast-container" id="toast-container"></div>
+    <!-- My Applications Modal -->
+    <div class="modal-overlay" id="applications-modal-overlay">
+        <div class="modal" id="applications-modal">
+            <div class="modal-header">
+                <h2>📋 My Applications</h2>
+                <button class="modal-close" id="applications-modal-close">✕</button>
+            </div>
+            <div class="modal-body" id="applications-modal-body">
+                <!-- Filled dynamically -->
+            </div>
+        </div>
+    </div>
 
-  <script src="app.js"></script>
+    <!-- Change Password Modal -->
+    <div class="modal-overlay" id="password-modal-overlay">
+        <div class="modal" id="password-modal" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2>🔒 Change Password</h2>
+                <button class="modal-close" id="password-modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <form class="apply-form" id="password-form">
+                    <div class="form-group">
+                        <label>Current Password <span class="required">*</span></label>
+                        <input type="password" class="form-input" id="current-password"
+                            placeholder="Enter current password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>New Password <span class="required">*</span></label>
+                        <input type="password" class="form-input" id="new-password" placeholder="Enter new password"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password <span class="required">*</span></label>
+                        <input type="password" class="form-input" id="confirm-new-password"
+                            placeholder="Confirm new password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; justify-content: center;">
+                        🔑 Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="app.js"></script>
 </body>
+
 </html>
