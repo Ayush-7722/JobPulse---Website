@@ -195,13 +195,24 @@ router.get('/me', authenticateToken, async (req, res) => {
 // ── PUT /api/auth/profile ──
 router.put('/profile', authenticateToken, async (req, res) => {
   try {
-    const full_name = sanitize(req.body.full_name);
-    const phone     = sanitize(req.body.phone);
-    const updates   = {};
-    if (full_name) updates.full_name = full_name;
-    if (phone !== undefined) updates.phone = phone;
-    const user = await User.findByIdAndUpdate(req.user.userId, updates, { new: true }).select('-password_hash');
-    res.json({ message: 'Profile updated.', user });
+    const user = await User.findById(req.user.userId);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+
+    const fields = ['full_name', 'phone', 'address', 'bio', 'current_job_title', 'resume_url', 'linkedin_url', 'portfolio_url'];
+    
+    fields.forEach(field => {
+      // Intentionally omitting empty strings / undefined to avoid overwriting with null unless explicitly sent
+      if (req.body[field] !== undefined) {
+        user[field] = sanitize(req.body[field]);
+      }
+    });
+
+    await user.save();
+    
+    // Convert to object cleanly invoking getters
+    const userObj = user.toObject();
+    delete userObj.password_hash;
+    res.json({ message: 'Profile updated dynamically.', user: userObj });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

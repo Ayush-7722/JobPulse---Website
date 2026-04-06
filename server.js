@@ -7,8 +7,10 @@ const path  = require('path');
 const fs    = require('fs');
 const https = require('https');
 const http  = require('http');
+const compression = require('compression');
+const RedisStore = require('rate-limit-redis').default;
+const { redisClient, isRedisConnected } = require('./services/cache');
 const { sanitizeBody } = require('./middleware/auth');
-
 // ── Connect to MongoDB (triggers auto-seed on first boot) ──
 require('./db/mongodb');
 
@@ -53,8 +55,18 @@ app.use(cors({
 }));
 
 
-// Rate Limiting
+// Rate Limiting (Using Redis if available for scalable distributed limits)
+const getRateLimitStore = () => {
+  if (redisClient && isRedisConnected()) {
+    return new RedisStore({
+      sendCommand: (...args) => redisClient.sendCommand(args),
+    });
+  }
+  return undefined; // fallback to memory
+};
+
 const generalLimiter = rateLimit({
+  store: getRateLimitStore(),
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 200,
   message: { error: 'Too many requests. Please try again later.' },
@@ -63,6 +75,7 @@ const generalLimiter = rateLimit({
 });
 
 const authLimiter = rateLimit({
+  store: getRateLimitStore(),
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: { error: 'Too many authentication attempts. Please try again in 15 minutes.' },
@@ -71,6 +84,9 @@ const authLimiter = rateLimit({
 });
 
 app.use('/api/', generalLimiter);
+
+// Compression — GZIP all responses
+app.use(compression());
 
 // Body parsing
 app.use(express.json({ limit: '1mb' }));

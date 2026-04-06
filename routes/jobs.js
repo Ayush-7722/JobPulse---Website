@@ -2,6 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const { Job, Category } = require('../db/mongodb');
 const { authenticateToken, requireAdmin, sanitize } = require('../middleware/auth');
+const { cacheMiddleware } = require('../services/cache');
 
 // ── GET /api/jobs ── List & search
 router.get('/', async (req, res) => {
@@ -55,7 +56,7 @@ router.get('/', async (req, res) => {
 });
 
 // ── GET /api/jobs/featured ──
-router.get('/featured', async (req, res) => {
+router.get('/featured', cacheMiddleware(300), async (req, res) => {
   try {
     const jobs = await Job.find({ is_featured: true, is_active: true })
       .sort({ created_at: -1 }).limit(8).lean();
@@ -66,7 +67,7 @@ router.get('/featured', async (req, res) => {
 });
 
 // ── GET /api/jobs/stats ──
-router.get('/stats', async (req, res) => {
+router.get('/stats', cacheMiddleware(300), async (req, res) => {
   try {
     const [total_jobs, total_internships, total_remote] = await Promise.all([
       Job.countDocuments({ is_active: true }),

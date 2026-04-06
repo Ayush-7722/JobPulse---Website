@@ -1153,6 +1153,58 @@ function init() {
     if (e.target === e.currentTarget) closeModal('password-modal-overlay');
   });
 
+  // Edit Profile Modal Handling
+  document.getElementById('edit-profile-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    document.getElementById('user-menu').classList.remove('open');
+    try {
+      // Fetch fresh user data including extended fields
+      const { user } = await api.get('/auth/me');
+      document.getElementById('profile-name').value = user.full_name || '';
+      document.getElementById('profile-phone').value = user.phone || '';
+      document.getElementById('profile-address').value = user.address || '';
+      document.getElementById('profile-job-title').value = user.current_job_title || '';
+      document.getElementById('profile-linkedin').value = user.linkedin_url || '';
+      document.getElementById('profile-portfolio').value = user.portfolio_url || '';
+      document.getElementById('profile-resume').value = user.resume_url || '';
+      document.getElementById('profile-bio').value = user.bio || '';
+      openModal('profile-modal-overlay');
+    } catch (err) {
+      showToast('Failed to load profile data', 'error');
+    }
+  });
+
+  document.getElementById('profile-modal-close').addEventListener('click', () => closeModal('profile-modal-overlay'));
+  document.getElementById('profile-modal-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeModal('profile-modal-overlay');
+  });
+
+  document.getElementById('profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        full_name: document.getElementById('profile-name').value,
+        phone: document.getElementById('profile-phone').value,
+        address: document.getElementById('profile-address').value,
+        current_job_title: document.getElementById('profile-job-title').value,
+        linkedin_url: document.getElementById('profile-linkedin').value,
+        portfolio_url: document.getElementById('profile-portfolio').value,
+        resume_url: document.getElementById('profile-resume').value,
+        bio: document.getElementById('profile-bio').value,
+      };
+      
+      const { user } = await api.put('/auth/profile', payload);
+      
+      state.user = user;
+      updateUIForAuth(true); // Update navbar
+      
+      closeModal('profile-modal-overlay');
+      showToast('Profile updated & secured locally. 🔐', 'success');
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  });
+
   // Password change form
   document.getElementById('password-form').addEventListener('submit', async (e) => {
     e.preventDefault();
