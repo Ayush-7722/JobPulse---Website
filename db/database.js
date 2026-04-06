@@ -148,6 +148,26 @@ if (jobCount.count === 0) {
       jobs.forEach(j => insertJob.run(j.title, j.company, j.logo, j.location, j.type, j.mode, j.cat, j.smin, j.smax, j.cur, j.desc, j.req, j.resp, j.skills, j.level, j.featured, j.deadline));
     })();
     console.log(`✅ Auto-seeded ${jobs.length} jobs successfully`);
+
+    // ── Seed demo users ──
+    // Pre-computed bcrypt hash for "Demo@1234" (12 rounds) — avoids runtime cost
+    const demoHash = '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewHT2kHN4F5U5tEi';
+    const adminHash = '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewHT2kHN4F5U5tEi';
+
+    // Generate fresh hash using bcrypt for correct password
+    const bcrypt = require('bcryptjs');
+    const demoPasswordHash  = bcrypt.hashSync('Demo@1234', 10);
+    const adminPasswordHash = bcrypt.hashSync('Admin@1234', 10);
+
+    const insertUser = db.prepare(`
+      INSERT OR IGNORE INTO users (full_name, email, password_hash, role, is_active)
+      VALUES (?, ?, ?, ?, 1)
+    `);
+    db.transaction(() => {
+      insertUser.run('Demo User',   'demo@jobpulse.com',  demoPasswordHash,  'user');
+      insertUser.run('Admin User',  'admin@jobpulse.com', adminPasswordHash, 'admin');
+    })();
+    console.log('✅ Demo accounts seeded: demo@jobpulse.com / Demo@1234');
   } catch (err) {
     console.error('⚠️  Auto-seed error:', err.message);
   }
