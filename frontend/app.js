@@ -899,16 +899,42 @@ function init() {
     btn.innerHTML = '⏳ Logging in...';
     btn.disabled = true;
 
+    // Clear any previous inline error
+    const prevErr = document.getElementById('login-inline-error');
+    if (prevErr) prevErr.remove();
+
     try {
       const data = await api.post('/auth/login', {
-        email: document.getElementById('login-email').value,
+        email: document.getElementById('login-email').value.trim(),
         password: document.getElementById('login-password').value,
       });
       saveAuth(data.token, data.user);
       closeModal('auth-modal-overlay');
-      showToast(`Welcome back, ${data.user.full_name}!`, 'success');
+      showToast(`Welcome back, ${data.user.full_name}! 🎉`, 'success');
       e.target.reset();
     } catch (err) {
+      // Show persistent inline error with credential hint
+      const errDiv = document.createElement('div');
+      errDiv.id = 'login-inline-error';
+      errDiv.style.cssText = 'margin-top:10px;padding:12px 14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:10px;font-size:13px;animation:shake 0.4s ease;';
+      errDiv.innerHTML = `
+        <div style="color:#ef4444;font-weight:600;margin-bottom:6px;">❌ ${err.message || 'Invalid email or password'}</div>
+        <div style="color:var(--text-secondary,#64748b);">
+          Try the demo account:<br>
+          📧 <strong>demo@jobpulse.com</strong><br>
+          🔑 <strong>Demo@1234</strong><br>
+          <a href="#" id="inline-demo-btn" style="color:var(--primary,#6366f1);font-weight:700;text-decoration:none;">⚡ Auto-login with demo →</a>
+        </div>`;
+      e.target.appendChild(errDiv);
+
+      // Wire up the inline demo button
+      document.getElementById('inline-demo-btn').addEventListener('click', async (ev) => {
+        ev.preventDefault();
+        document.getElementById('login-email').value = 'demo@jobpulse.com';
+        document.getElementById('login-password').value = 'Demo@1234';
+        document.getElementById('login-form').requestSubmit();
+      });
+
       showToast(err.message, 'error');
     } finally {
       btn.innerHTML = orig;
