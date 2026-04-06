@@ -81,9 +81,10 @@ function otpEmailHTML(name, otp) {
 </html>`;
 }
 
-// ── Send OTP Email ──
+// ── Send OTP Email with 5 attempts ──
 async function sendOTPEmail(toEmail, name, otp) {
   const transporter = createTransporter();
+  const maxAttempts = 5;
 
   if (!transporter) {
     // SMTP not configured — log to console in dev mode
@@ -91,18 +92,26 @@ async function sendOTPEmail(toEmail, name, otp) {
     return { sent: false, reason: 'SMTP_NOT_CONFIGURED' };
   }
 
-  try {
-    await transporter.sendMail({
-      from: `"JobPulse" <${process.env.SMTP_USER}>`,
-      to: toEmail,
-      subject: `${otp} is your JobPulse verification code`,
-      html: otpEmailHTML(name, otp),
-      text: `Your JobPulse verification code is: ${otp}\n\nThis code expires in 10 minutes.\n\nIf you did not request this, please ignore this email.`,
-    });
-    return { sent: true };
-  } catch (err) {
-    console.error('Email send error:', err.message);
-    return { sent: false, reason: err.message };
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await transporter.sendMail({
+        from: `"JobPulse" <${process.env.SMTP_USER}>`,
+        to: toEmail,
+        subject: `${otp} is your JobPulse verification code`,
+        html: otpEmailHTML(name, otp),
+        text: `Your JobPulse verification code is: ${otp}\n\nThis code expires in 10 minutes.\n\nIf you did not request this, please ignore this email.`,
+      });
+      console.log(`✅ Email sent successfully to ${toEmail} on attempt ${attempt}`);
+      return { sent: true, attempts: attempt };
+    } catch (err) {
+      console.error(`❌ Attempt ${attempt} failed to send email to ${toEmail}: ${err.message}`);
+      if (attempt < maxAttempts) {
+        console.log(`⏳ Retrying in 1 second...`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } else {
+        return { sent: false, reason: err.message, attempts: maxAttempts };
+      }
+    }
   }
 }
 
