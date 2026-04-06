@@ -106,4 +106,16 @@ async function sendOTPEmail(toEmail, name, otp) {
   }
 }
 
-module.exports = { sendOTPEmail };
+// ── Test Connection ──
+async function testConnection() {
+  const transporter = createTransporter();
+  if (!transporter) return { success: false, reason: 'SMTP_NOT_CONFIGURED' };
+  try {
+    await transporter.verify();
+    return { success: true };
+  } catch (err) {
+    return { success: false, reason: err.message };
+  }
+}
+
+module.exports = { sendOTPEmail, testConnection };

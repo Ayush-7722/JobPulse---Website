@@ -205,16 +205,32 @@ async function autoSeed() {
 
     // ── Users ──
     const userCount = await User.countDocuments();
+    const adminEmail = 'admin@jobpulse.com';
+    const bcrypt = require('bcryptjs');
+    const adminHash = bcrypt.hashSync('Admin@JobPulse1', 10);
+
+    // Always ensure the main admin account is correctly set
+    await User.findOneAndUpdate(
+      { email: adminEmail },
+      { 
+        full_name: 'khushi srivastav',
+        password_hash: adminHash,
+        role: 'admin',
+        is_active: true,
+        failed_login_attempts: 0,
+        locked_until: null
+      },
+      { upsert: true, new: true }
+    );
+    console.log('✅ Admin account ensured');
+
     if (userCount === 0) {
-      const bcrypt = require('bcryptjs');
       const userHash = bcrypt.hashSync('JobPulse@1', 10);
-      const adminHash = bcrypt.hashSync('Admin@JobPulse1', 10);
       const demoHash = bcrypt.hashSync('Demo@1234', 10);
 
       await User.insertMany([
-        // Admins
         { full_name: 'Ayush Raj', email: 'ayush@jobpulse.com', password_hash: adminHash, phone: '+91-9876543210', role: 'admin' },
-        { full_name: 'khushi srivastav', email: 'admin@jobpulse.com', password_hash: adminHash, phone: '+91-9988776655', role: 'admin' },
+
         // Indian users
         { full_name: 'Arjun Mehta', email: 'arjun.mehta@gmail.com', password_hash: userHash, phone: '+91-9123456789', role: 'user' },
         { full_name: 'Sneha Patel', email: 'sneha.patel@gmail.com', password_hash: userHash, phone: '+91-9234567890', role: 'user' },

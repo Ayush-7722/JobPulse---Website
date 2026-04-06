@@ -7,7 +7,7 @@ const { authenticateToken, sanitize } = require('../middleware/auth');
 
 const JWT_SECRET    = process.env.JWT_SECRET    || 'fallback_secret_change_me';
 const JWT_EXPIRES_IN= process.env.JWT_EXPIRES_IN|| '7d';
-const SALT_ROUNDS   = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 12;
+const SALT_ROUNDS   = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 10;
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
