@@ -38,9 +38,14 @@ function sanitize(str) {
 
 // ── Sanitize request body middleware ──
 function sanitizeBody(req, res, next) {
+  // Never sanitize passwords, tokens, or OTP codes as they may contain valid special characters
+  const skipFields = ['password', 'confirm_password', 'current_password', 'new_password', 'otp', 'otp_code', 'verified_token'];
+  
   if (req.body && typeof req.body === 'object') {
     for (const key of Object.keys(req.body)) {
-      if (typeof req.body[key] === 'string') req.body[key] = sanitize(req.body[key]);
+      if (typeof req.body[key] === 'string' && !skipFields.includes(key)) {
+        req.body[key] = sanitize(req.body[key]);
+      }
     }
   }
   next();

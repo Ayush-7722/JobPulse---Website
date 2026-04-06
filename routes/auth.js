@@ -150,11 +150,15 @@ router.post('/login', async (req, res) => {
     if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ error: 'Invalid email or password.' });
+    if (!user) {
+      console.warn(`[Auth] Login attempt failed: User not found for email ${email}`);
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
     if (!user.is_active) return res.status(403).json({ error: 'This account has been deactivated. Please contact support.' });
 
     const isValid = bcrypt.compareSync(password, user.password_hash);
     if (!isValid) {
+      console.warn(`[Auth] Login attempt failed: Password mismatch for email ${email}`);
       user.failed_login_attempts = (user.failed_login_attempts || 0) + 1;
       if (user.failed_login_attempts >= 5) {
         user.is_active = false;
