@@ -87,11 +87,10 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_applications_user ON applications(user_id);
 `);
 
-// ── Auto-seed on first boot ──
-// Inline seeding to avoid circular dependency (seed.js requires database.js)
+// ── Auto-seed jobs on first boot ──
 const jobCount = db.prepare('SELECT COUNT(*) as count FROM jobs').get();
 if (jobCount.count === 0) {
-  console.log('📦 Empty database — auto-seeding 25 jobs...');
+  console.log('📦 No jobs found — seeding 25 jobs...');
   try {
     const logo = (domain) => `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 
@@ -147,30 +146,32 @@ if (jobCount.count === 0) {
     db.transaction(() => {
       jobs.forEach(j => insertJob.run(j.title, j.company, j.logo, j.location, j.type, j.mode, j.cat, j.smin, j.smax, j.cur, j.desc, j.req, j.resp, j.skills, j.level, j.featured, j.deadline));
     })();
-    console.log(`✅ Auto-seeded ${jobs.length} jobs successfully`);
+    console.log(`✅ Seeded ${jobs.length} jobs`);
+  } catch (err) {
+    console.error('⚠️  Job seed error:', err.message);
+  }
+}
 
-    // ── Seed demo users ──
-    // Pre-computed bcrypt hash for "Demo@1234" (12 rounds) — avoids runtime cost
-    const demoHash = '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewHT2kHN4F5U5tEi';
-    const adminHash = '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewHT2kHN4F5U5tEi';
-
-    // Generate fresh hash using bcrypt for correct password
+// ── Auto-seed demo users (runs every boot, INSERT OR IGNORE is safe) ──
+try {
+  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
+  if (userCount.count === 0) {
+    console.log('👤 No users found — seeding demo accounts...');
     const bcrypt = require('bcryptjs');
     const demoPasswordHash  = bcrypt.hashSync('Demo@1234', 10);
     const adminPasswordHash = bcrypt.hashSync('Admin@1234', 10);
-
     const insertUser = db.prepare(`
       INSERT OR IGNORE INTO users (full_name, email, password_hash, role, is_active)
       VALUES (?, ?, ?, ?, 1)
     `);
     db.transaction(() => {
-      insertUser.run('Demo User',   'demo@jobpulse.com',  demoPasswordHash,  'user');
-      insertUser.run('Admin User',  'admin@jobpulse.com', adminPasswordHash, 'admin');
+      insertUser.run('Demo User',  'demo@jobpulse.com',  demoPasswordHash,  'user');
+      insertUser.run('Admin User', 'admin@jobpulse.com', adminPasswordHash, 'admin');
     })();
-    console.log('✅ Demo accounts seeded: demo@jobpulse.com / Demo@1234');
-  } catch (err) {
-    console.error('⚠️  Auto-seed error:', err.message);
+    console.log('✅ Demo users seeded: demo@jobpulse.com / Demo@1234 | admin@jobpulse.com / Admin@1234');
   }
+} catch (err) {
+  console.error('⚠️  User seed error:', err.message);
 }
 
 module.exports = db;
