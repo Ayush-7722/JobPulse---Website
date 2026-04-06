@@ -1,13 +1,16 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
+const cors    = require('cors');
+const helmet  = require('helmet');
 const rateLimit = require('express-rate-limit');
-const path = require('path');
-const fs = require('fs');
+const path  = require('path');
+const fs    = require('fs');
 const https = require('https');
-const http = require('http');
+const http  = require('http');
 const { sanitizeBody } = require('./middleware/auth');
+
+// ── Connect to MongoDB (triggers auto-seed on first boot) ──
+require('./db/mongodb');
 
 const app = express();
 const PORT = process.env.PORT || 3000;

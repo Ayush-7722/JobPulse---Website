@@ -1,18 +1,11 @@
-const express = require('express');
-const router = express.Router();
-const db = require('../db/database');
+const express  = require('express');
+const router   = express.Router();
+const { Category } = require('../db/mongodb');
 
-// GET /api/categories — List all categories with job counts
-router.get('/', (req, res) => {
+// GET /api/categories
+router.get('/', async (req, res) => {
   try {
-    const categories = db.prepare(`
-      SELECT c.*, COUNT(j.id) as job_count
-      FROM categories c
-      LEFT JOIN jobs j ON c.id = j.category_id AND j.is_active = 1
-      GROUP BY c.id
-      ORDER BY job_count DESC
-    `).all();
-
+    const categories = await Category.find().sort({ name: 1 }).lean();
     res.json({ categories });
   } catch (err) {
     res.status(500).json({ error: err.message });
