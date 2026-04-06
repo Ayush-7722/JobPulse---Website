@@ -3,7 +3,10 @@
 //  With Authentication & Security
 // ========================================
 
-const API_BASE = '/api';
+const API_BASE = (window.location.port && window.location.port !== '3000')
+  ? 'http://localhost:3000/api'   // Opened via Live Server or similar — proxy to real server
+  : '/api';                       // Served via Node (localhost:3000 or production)
+
 
 // ── State ──
 const state = {
@@ -652,8 +655,9 @@ function renderLiveJobCard(job) {
   const chipLabel = job.source === 'linkedin' ? '💼 LinkedIn' : '📡 Remotive';
 
   // Route logos through our proxy to bypass Cloudflare 403s
+  // Use API_BASE so this works from Live Server (5500) AND direct (3000)
   const proxyLogo = job.company_logo
-    ? `/api/logo-proxy?url=${encodeURIComponent(job.company_logo)}`
+    ? `${API_BASE}/logo-proxy?url=${encodeURIComponent(job.company_logo)}`
     : null;
 
   const fallbackLetter = escapeHtml(job.company.charAt(0).toUpperCase());

@@ -27,12 +27,16 @@ insertCats();
 
 console.log('✅ Categories seeded');
 
+// Helper: Google's favicon CDN — reliable, free, no sign-up needed
+// Sizes: 16, 32, 64, 128 — we use 128 for best quality
+const logo = (domain) => `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+
 // Jobs
 const jobs = [
   {
     title: 'Senior Frontend Engineer',
     company: 'Google',
-    company_logo: 'https://logo.clearbit.com/google.com',
+    company_logo: logo('google.com'),
     location: 'Mountain View, CA',
     type: 'Full-Time',
     work_mode: 'Hybrid',
@@ -51,7 +55,7 @@ const jobs = [
   {
     title: 'Machine Learning Intern',
     company: 'OpenAI',
-    company_logo: 'https://logo.clearbit.com/openai.com',
+    company_logo: logo('openai.com'),
     location: 'San Francisco, CA',
     type: 'Internship',
     work_mode: 'On-site',
@@ -70,7 +74,7 @@ const jobs = [
   {
     title: 'Full Stack Developer',
     company: 'Stripe',
-    company_logo: 'https://logo.clearbit.com/stripe.com',
+    company_logo: logo('stripe.com'),
     location: 'Seattle, WA',
     type: 'Full-Time',
     work_mode: 'Remote',
@@ -89,7 +93,7 @@ const jobs = [
   {
     title: 'Product Design Intern',
     company: 'Figma',
-    company_logo: 'https://logo.clearbit.com/figma.com',
+    company_logo: logo('figma.com'),
     location: 'San Francisco, CA',
     type: 'Internship',
     work_mode: 'Hybrid',
@@ -108,7 +112,7 @@ const jobs = [
   {
     title: 'Backend Engineer',
     company: 'Spotify',
-    company_logo: 'https://logo.clearbit.com/spotify.com',
+    company_logo: logo('spotify.com'),
     location: 'Stockholm, Sweden',
     type: 'Full-Time',
     work_mode: 'Hybrid',
@@ -127,7 +131,7 @@ const jobs = [
   {
     title: 'Data Science Intern',
     company: 'Netflix',
-    company_logo: 'https://logo.clearbit.com/netflix.com',
+    company_logo: logo('netflix.com'),
     location: 'Los Gatos, CA',
     type: 'Internship',
     work_mode: 'On-site',
@@ -146,7 +150,7 @@ const jobs = [
   {
     title: 'DevOps Engineer',
     company: 'Amazon',
-    company_logo: 'https://logo.clearbit.com/amazon.com',
+    company_logo: logo('amazon.com'),
     location: 'Arlington, VA',
     type: 'Full-Time',
     work_mode: 'On-site',
@@ -165,7 +169,7 @@ const jobs = [
   {
     title: 'iOS Developer',
     company: 'Apple',
-    company_logo: 'https://logo.clearbit.com/apple.com',
+    company_logo: logo('apple.com'),
     location: 'Cupertino, CA',
     type: 'Full-Time',
     work_mode: 'On-site',
@@ -184,7 +188,7 @@ const jobs = [
   {
     title: 'Product Manager',
     company: 'Meta',
-    company_logo: 'https://logo.clearbit.com/meta.com',
+    company_logo: logo('meta.com'),
     location: 'Menlo Park, CA',
     type: 'Full-Time',
     work_mode: 'Hybrid',
@@ -203,7 +207,7 @@ const jobs = [
   {
     title: 'Cybersecurity Analyst',
     company: 'CrowdStrike',
-    company_logo: 'https://logo.clearbit.com/crowdstrike.com',
+    company_logo: logo('crowdstrike.com'),
     location: 'Austin, TX',
     type: 'Full-Time',
     work_mode: 'Remote',
@@ -222,7 +226,7 @@ const jobs = [
   {
     title: 'Marketing Intern',
     company: 'HubSpot',
-    company_logo: 'https://logo.clearbit.com/hubspot.com',
+    company_logo: logo('hubspot.com'),
     location: 'Boston, MA',
     type: 'Internship',
     work_mode: 'Hybrid',
@@ -241,7 +245,7 @@ const jobs = [
   {
     title: 'Android Developer',
     company: 'Samsung',
-    company_logo: 'https://logo.clearbit.com/samsung.com',
+    company_logo: logo('samsung.com'),
     location: 'Seoul, South Korea',
     type: 'Full-Time',
     work_mode: 'On-site',
@@ -260,7 +264,7 @@ const jobs = [
   {
     title: 'Cloud Solutions Architect',
     company: 'Microsoft',
-    company_logo: 'https://logo.clearbit.com/microsoft.com',
+    company_logo: logo('microsoft.com'),
     location: 'Redmond, WA',
     type: 'Full-Time',
     work_mode: 'Hybrid',
@@ -279,7 +283,7 @@ const jobs = [
   {
     title: 'UX Researcher',
     company: 'Airbnb',
-    company_logo: 'https://logo.clearbit.com/airbnb.com',
+    company_logo: logo('airbnb.com'),
     location: 'San Francisco, CA',
     type: 'Full-Time',
     work_mode: 'Remote',
@@ -298,7 +302,7 @@ const jobs = [
   {
     title: 'Financial Analyst Intern',
     company: 'Goldman Sachs',
-    company_logo: 'https://logo.clearbit.com/goldmansachs.com',
+    company_logo: logo('goldmansachs.com'),
     location: 'New York, NY',
     type: 'Internship',
     work_mode: 'On-site',
@@ -317,7 +321,7 @@ const jobs = [
   {
     title: 'HR Business Partner',
     company: 'Salesforce',
-    company_logo: 'https://logo.clearbit.com/salesforce.com',
+    company_logo: logo('salesforce.com'),
     location: 'San Francisco, CA',
     type: 'Full-Time',
     work_mode: 'Hybrid',
@@ -336,7 +340,7 @@ const jobs = [
   {
     title: 'React Native Developer',
     company: 'Uber',
-    company_logo: 'https://logo.clearbit.com/uber.com',
+    company_logo: logo('uber.com'),
     location: 'San Francisco, CA',
     type: 'Full-Time',
     work_mode: 'Hybrid',
@@ -355,7 +359,7 @@ const jobs = [
   {
     title: 'Data Engineer',
     company: 'Snowflake',
-    company_logo: 'https://logo.clearbit.com/snowflake.com',
+    company_logo: logo('snowflake.com'),
     location: 'Bozeman, MT',
     type: 'Full-Time',
     work_mode: 'Remote',
@@ -374,7 +378,7 @@ const jobs = [
   {
     title: 'Sales Development Representative',
     company: 'Notion',
-    company_logo: 'https://logo.clearbit.com/notion.so',
+    company_logo: logo('notion.so'),
     location: 'New York, NY',
     type: 'Full-Time',
     work_mode: 'Hybrid',
@@ -393,7 +397,7 @@ const jobs = [
   {
     title: 'Software Engineering Intern',
     company: 'Tesla',
-    company_logo: 'https://logo.clearbit.com/tesla.com',
+    company_logo: logo('tesla.com'),
     location: 'Palo Alto, CA',
     type: 'Internship',
     work_mode: 'On-site',
@@ -412,7 +416,7 @@ const jobs = [
   {
     title: 'AI Research Scientist',
     company: 'DeepMind',
-    company_logo: 'https://logo.clearbit.com/deepmind.com',
+    company_logo: logo('deepmind.com'),
     location: 'London, UK',
     type: 'Full-Time',
     work_mode: 'Hybrid',
@@ -431,7 +435,7 @@ const jobs = [
   {
     title: 'Growth Marketing Manager',
     company: 'Shopify',
-    company_logo: 'https://logo.clearbit.com/shopify.com',
+    company_logo: logo('shopify.com'),
     location: 'Toronto, Canada',
     type: 'Full-Time',
     work_mode: 'Remote',
@@ -450,7 +454,7 @@ const jobs = [
   {
     title: 'Blockchain Developer',
     company: 'Coinbase',
-    company_logo: 'https://logo.clearbit.com/coinbase.com',
+    company_logo: logo('coinbase.com'),
     location: 'Remote',
     type: 'Full-Time',
     work_mode: 'Remote',
@@ -469,7 +473,7 @@ const jobs = [
   {
     title: 'QA Engineering Intern',
     company: 'Adobe',
-    company_logo: 'https://logo.clearbit.com/adobe.com',
+    company_logo: logo('adobe.com'),
     location: 'San Jose, CA',
     type: 'Internship',
     work_mode: 'Hybrid',
@@ -488,7 +492,7 @@ const jobs = [
   {
     title: 'Technical Program Manager',
     company: 'LinkedIn',
-    company_logo: 'https://logo.clearbit.com/linkedin.com',
+    company_logo: logo('linkedin.com'),
     location: 'Sunnyvale, CA',
     type: 'Full-Time',
     work_mode: 'Hybrid',

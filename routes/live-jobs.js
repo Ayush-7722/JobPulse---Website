@@ -60,23 +60,30 @@ async function fetchRemotiveJobs(query = '', category = '', limit = 50) {
 
   if (data.jobs && Array.isArray(data.jobs)) {
     // Normalize to our format
-    const normalized = data.jobs.map((job) => ({
-      id: `remotive_${job.id}`,
-      title: job.title,
-      company: job.company_name,
-      company_logo: job.company_logo_url || job.company_logo || '',
-      location: job.candidate_required_location || 'Remote',
-      type: normalizeJobType(job.job_type),
-      work_mode: 'Remote',
-      category: job.category || 'General',
-      salary: job.salary || 'Competitive',
-      description: stripHtml(job.description || ''),
-      tags: job.tags || [],
-      published: job.publication_date,
-      apply_url: job.url,
-      source: 'remotive',
-      source_label: 'Remotive',
-    }));
+    const normalized = data.jobs.map((job) => {
+      // Remotive's job-specific logo URLs (remotive.com/job/XXXXX/logo) are
+      // Cloudflare-protected and return 404 for all requests. Skip them entirely
+      // so the frontend shows the clean letter-avatar fallback instead.
+      const logoUrl = job.company_logo_url || job.company_logo || '';
+      const isRomotiveLogo = logoUrl.includes('remotive.com/job/');
+      return {
+        id: `remotive_${job.id}`,
+        title: job.title,
+        company: job.company_name,
+        company_logo: isRomotiveLogo ? '' : logoUrl,  // skip broken logos
+        location: job.candidate_required_location || 'Remote',
+        type: normalizeJobType(job.job_type),
+        work_mode: 'Remote',
+        category: job.category || 'General',
+        salary: job.salary || 'Competitive',
+        description: stripHtml(job.description || ''),
+        tags: job.tags || [],
+        published: job.publication_date,
+        apply_url: job.url,
+        source: 'remotive',
+        source_label: 'Remotive',
+      };
+    });
 
     cache.remotive = { data: normalized, timestamp: now, key: cacheKey };
     return normalized;

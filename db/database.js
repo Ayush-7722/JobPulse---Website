@@ -87,4 +87,17 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_applications_user ON applications(user_id);
 `);
 
+// ── Auto-seed on first boot ──
+// If the DB is empty (fresh deploy), run the seed script automatically.
+const jobCount = db.prepare('SELECT COUNT(*) as count FROM jobs').get();
+if (jobCount.count === 0) {
+  console.log('📦 Empty database detected — auto-seeding...');
+  try {
+    require('./seed');
+    console.log('✅ Database auto-seeded successfully');
+  } catch (err) {
+    console.error('⚠️  Auto-seed failed:', err.message);
+  }
+}
+
 module.exports = db;

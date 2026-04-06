@@ -32,13 +32,23 @@ app.use((req, res, next) => {
 });
 
 // CORS
+const DEV_ORIGINS = [
+  'http://localhost:3000',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
+  'http://localhost:5501',
+  'http://127.0.0.1:3000',
+];
+
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
     ? process.env.ALLOWED_ORIGIN || '*'
-    : '*',
+    : DEV_ORIGINS,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 }));
+
 
 // Rate Limiting
 const generalLimiter = rateLimit({
@@ -127,7 +137,8 @@ app.get('/api/logo-proxy', (req, res) => {
     if (proxyRes.statusCode !== 200) return res.status(404).end();
 
     res.setHeader('Content-Type', proxyRes.headers['content-type'] || 'image/png');
-    res.setHeader('Cache-Control', 'public, max-age=86400');  // Cache for 24h
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');  // Fix NotSameOrigin block
     proxyRes.pipe(res);
   });
 
