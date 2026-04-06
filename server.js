@@ -17,6 +17,9 @@ require('./db/mongodb');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy (Required for rate limiting to work correctly on platforms like Railway)
+app.set('trust proxy', 1);
+
 // ══════════════════════════════════════
 //  Security Middleware
 // ══════════════════════════════════════
@@ -77,7 +80,7 @@ const generalLimiter = rateLimit({
 const authLimiter = rateLimit({
   store: getRateLimitStore(),
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 20, // Increased from 10 to 20 to be more lenient
   message: { error: 'Too many authentication attempts. Please try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
