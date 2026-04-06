@@ -91,7 +91,7 @@ jobSchema.index({ title: 'text', company: 'text', skills: 'text', description: '
 
 // ── Application ──
 const applicationSchema = new mongoose.Schema({
-  job: { type: mongoose.Schema.Types.ObjectId, ref: 'Job', required: true },
+  job: { type: String, required: true }, // Changed from ObjectId to String for compatibility with Google Sheets IDs
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   full_name: { type: String, required: true },
   email: { type: String, required: true },

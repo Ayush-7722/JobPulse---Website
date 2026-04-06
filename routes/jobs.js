@@ -1,47 +1,53 @@
 const express = require('express');
 const router  = express.Router();
-const { Job, Category } = require('../db/mongodb');
+const { fetchJobsFromSheet, getJobById } = require('../services/googleSheets');
 const { authenticateToken, requireAdmin, sanitize } = require('../middleware/auth');
 const { cacheMiddleware } = require('../services/cache');
 
-// ── GET /api/jobs ── List & search
+// ── GET /api/jobs ── List & search from Google Sheets
 router.get('/', async (req, res) => {
   try {
     const { search, type, work_mode, category, experience_level, sort, page = 1, limit = 12 } = req.query;
-    const filter = { is_active: true };
+    
+    let jobs = await fetchJobsFromSheet();
 
+    // 1. Filter
     if (search) {
-      filter.$or = [
-        { title:       { $regex: search, $options: 'i' } },
-        { company:     { $regex: search, $options: 'i' } },
-        { skills:      { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-      ];
+      const s = search.toLowerCase();
+      jobs = jobs.filter(j => 
+        j.title.toLowerCase().includes(s) || 
+        j.company.toLowerCase().includes(s) || 
+        j.skills.toLowerCase().includes(s) || 
+        j.description.toLowerCase().includes(s)
+      );
     }
-    if (type)             filter.type             = type;
-    if (work_mode)        filter.work_mode        = work_mode;
-    if (category)         filter.category_name    = category;
-    if (experience_level) filter.experience_level = experience_level;
+    if (type)             jobs = jobs.filter(j => j.type === type);
+    if (work_mode)        jobs = jobs.filter(j => j.work_mode === work_mode);
+    if (category)         jobs = jobs.filter(j => j.category_name === category);
+    if (experience_level) jobs = jobs.filter(j => j.experience_level === experience_level);
 
-    let sortObj = { created_at: -1 };
-    if (sort === 'salary_high') sortObj = { salary_max: -1 };
-    if (sort === 'salary_low')  sortObj = { salary_min: 1  };
-    if (sort === 'deadline')    sortObj = { deadline: 1    };
+    // 2. Sort
+    if (sort === 'salary_high') {
+      jobs.sort((a, b) => (b.salary_max || 0) - (a.salary_max || 0));
+    } else if (sort === 'salary_low') {
+      jobs.sort((a, b) => (a.salary_min || 0) - (b.salary_min || 0));
+    } else if (sort === 'deadline') {
+      jobs.sort((a, b) => new Date(a.deadline || '9999') - new Date(b.deadline || '9999'));
+    } else {
+      // Default: Newest first (using index as a proxy for 'newest' if no date provided)
+      // Since Google Sheets usually adds new entries at the bottom, we might want to reverse it
+      // or use a 'Date Posted' column if it exists.
+    }
 
+    // 3. Pagination
+    const total = jobs.length;
     const pageNum  = parseInt(page);
     const limitNum = parseInt(limit);
     const skip     = (pageNum - 1) * limitNum;
-
-    const [jobs, total] = await Promise.all([
-      Job.find(filter).sort(sortObj).skip(skip).limit(limitNum).lean(),
-      Job.countDocuments(filter),
-    ]);
-
-    // Format for frontend (id field)
-    const formatted = jobs.map(j => ({ ...j, id: j._id.toString() }));
+    const paginatedJobs = jobs.slice(skip, skip + limitNum);
 
     res.json({
-      jobs: formatted,
+      jobs: paginatedJobs.map(j => ({ ...j, id: j._id })),
       pagination: {
         current_page: pageNum,
         total_pages:  Math.ceil(total / limitNum),
@@ -58,9 +64,9 @@ router.get('/', async (req, res) => {
 // ── GET /api/jobs/featured ──
 router.get('/featured', cacheMiddleware(300), async (req, res) => {
   try {
-    const jobs = await Job.find({ is_featured: true, is_active: true })
-      .sort({ created_at: -1 }).limit(8).lean();
-    res.json({ jobs: jobs.map(j => ({ ...j, id: j._id.toString() })) });
+    const allJobs = await fetchJobsFromSheet();
+    const featured = allJobs.filter(j => j.is_featured).slice(0, 8);
+    res.json({ jobs: featured.map(j => ({ ...j, id: j._id })) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -69,14 +75,18 @@ router.get('/featured', cacheMiddleware(300), async (req, res) => {
 // ── GET /api/jobs/stats ──
 router.get('/stats', cacheMiddleware(300), async (req, res) => {
   try {
-    const [total_jobs, total_internships, total_remote] = await Promise.all([
-      Job.countDocuments({ is_active: true }),
-      Job.countDocuments({ is_active: true, type: 'Internship' }),
-      Job.countDocuments({ is_active: true, work_mode: 'Remote' }),
-    ]);
-    // Count distinct companies
-    const companies = await Job.distinct('company', { is_active: true });
-    res.json({ total_jobs, total_internships, total_companies: companies.length, total_remote });
+    const allJobs = await fetchJobsFromSheet();
+    const total_jobs = allJobs.length;
+    const total_internships = allJobs.filter(j => j.type === 'Internship').length;
+    const total_remote = allJobs.filter(j => j.work_mode === 'Remote').length;
+    const companies = [...new Set(allJobs.map(j => j.company))];
+
+    res.json({ 
+      total_jobs, 
+      total_internships, 
+      total_companies: companies.length, 
+      total_remote 
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -85,60 +95,15 @@ router.get('/stats', cacheMiddleware(300), async (req, res) => {
 // ── GET /api/jobs/:id ──
 router.get('/:id', async (req, res) => {
   try {
-    const job = await Job.findById(req.params.id).lean();
+    const job = await getJobById(req.params.id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
-    res.json({ job: { ...job, id: job._id.toString() } });
+    res.json({ job: { ...job, id: job._id } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ── POST /api/jobs — Create Job (admin only) ──
-router.post('/', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const { title, company, location, type, work_mode, description } = req.body;
-    if (!title || !company || !location || !description) {
-      return res.status(400).json({ error: 'Title, company, location, and description are required.' });
-    }
-
-    // Resolve category name
-    let categoryId   = null;
-    let categoryName = '';
-    let categoryIcon = '';
-    if (req.body.category_id) {
-      const cat = await Category.findById(req.body.category_id);
-      if (cat) { categoryId = cat._id; categoryName = cat.name; categoryIcon = cat.icon; }
-    }
-
-    const job = await Job.create({
-      title: sanitize(title), company: sanitize(company),
-      company_logo: sanitize(req.body.company_logo) || '',
-      location: sanitize(location), type, work_mode,
-      category: categoryId, category_name: categoryName, category_icon: categoryIcon,
-      salary_min: req.body.salary_min, salary_max: req.body.salary_max,
-      currency: req.body.currency || 'USD',
-      description:      sanitize(description),
-      requirements:     sanitize(req.body.requirements)     || '',
-      responsibilities: sanitize(req.body.responsibilities) || '',
-      skills:           sanitize(req.body.skills)           || '',
-      experience_level: req.body.experience_level || 'Entry Level',
-      is_featured: !!req.body.is_featured,
-      deadline: req.body.deadline || null,
-    });
-    res.status(201).json({ id: job._id, message: 'Job created successfully' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── DELETE /api/jobs/:id (admin only, soft delete) ──
-router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    await Job.findByIdAndUpdate(req.params.id, { is_active: false });
-    res.json({ message: 'Job deleted successfully' });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// Note: POST and DELETE for admin are disabled for Google Sheets sync
+// In a real app, you might use the Google Sheets API write capability.
 
 module.exports = router;
