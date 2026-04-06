@@ -3,9 +3,13 @@
 //  With Authentication & Security
 // ========================================
 
+// Detect environment:
+// - Railway/production: no port or port 443/80 → use relative '/api'
+// - VS Code Live Server: port 5500/5501 → proxy to localhost:3000
+// - Direct Node: port 3000 → use relative '/api'
 const API_BASE = (window.location.port && window.location.port !== '3000')
-  ? 'http://localhost:3000/api'   // Opened via Live Server or similar — proxy to real server
-  : '/api';                       // Served via Node (localhost:3000 or production)
+  ? 'http://localhost:3000/api'
+  : '/api';
 
 
 // ── State ──
@@ -68,7 +72,10 @@ const api = {
     });
     const data = await res.json().catch(() => ({ error: 'Request failed' }));
     if (!res.ok) {
-      if (res.status === 401) handleAuthError();
+      // Only trigger session-expired logout for 401s on NON-auth routes.
+      // On /auth/login and /auth/register, 401 just means wrong credentials.
+      const isAuthRoute = url.startsWith('/auth/');
+      if (res.status === 401 && !isAuthRoute) handleAuthError();
       throw new Error(data.error || 'Request failed');
     }
     return data;
