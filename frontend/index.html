@@ -384,109 +384,51 @@
                     </p>
                 </form>
 
-                <!-- ══════════════════════════════════════ -->
-                <!-- Register Form — 3-step OTP flow        -->
-                <!-- ══════════════════════════════════════ -->
-                <div id="register-form" style="display:none;">
-
-                  <!-- Step indicator -->
-                  <div id="otp-steps" style="display:flex;gap:0;margin-bottom:24px;border-radius:10px;overflow:hidden;border:1px solid var(--border,#e2e8f0);">
-                    <div class="otp-step-tab active" id="step-tab-1" style="flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;background:var(--primary,#6366f1);color:#fff;">① Your Info</div>
-                    <div class="otp-step-tab" id="step-tab-2" style="flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;background:var(--bg-secondary,#f1f5f9);color:var(--text-secondary,#64748b);">② Verify Email</div>
-                    <div class="otp-step-tab" id="step-tab-3" style="flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;background:var(--bg-secondary,#f1f5f9);color:var(--text-secondary,#64748b);">③ Set Password</div>
+                <!-- Unified Direct Registration Form -->
+                <form class="apply-form" id="register-form" style="display:none;">
+                  <div class="form-group">
+                    <label>Full Name <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="register-name" placeholder="John Doe" autocomplete="name" required>
                   </div>
-
-                  <!-- Step 1: Basic Info -->
-                  <div id="reg-step-1">
-                    <div class="form-group">
-                      <label>Full Name <span class="required">*</span></label>
-                      <input type="text" class="form-input" id="register-name" placeholder="John Doe" autocomplete="name">
-                    </div>
-                    <div class="form-group">
-                      <label>Email Address <span class="required">*</span></label>
-                      <input type="email" class="form-input" id="register-email" placeholder="you@example.com" autocomplete="email">
-                    </div>
-                    <div class="form-group">
-                      <label>Phone <span style="color:var(--text-secondary,#64748b);font-size:12px;">(optional)</span></label>
-                      <input type="tel" class="form-input" id="register-phone" placeholder="+1 (555) 000-0000" autocomplete="tel">
-                    </div>
-                    <button type="button" class="btn btn-primary btn-lg" id="send-otp-btn" style="width:100%;justify-content:center;">
-                      📧 Send Verification Code
-                    </button>
-                    <p class="auth-switch" style="margin-top:16px;">Already have an account? <a href="#" id="switch-to-login">Log in</a></p>
+                  <div class="form-group">
+                    <label>Email Address <span class="required">*</span></label>
+                    <input type="email" class="form-input" id="register-email" placeholder="you@example.com" autocomplete="email" required>
                   </div>
-
-                  <!-- Step 2: OTP Input -->
-                  <div id="reg-step-2" style="display:none;">
-                    <div style="text-align:center;margin-bottom:24px;">
-                      <div style="font-size:40px;margin-bottom:10px;">📬</div>
-                      <h3 style="margin:0 0 8px;font-size:18px;">Check your inbox</h3>
-                      <p style="margin:0;color:var(--text-secondary,#64748b);font-size:14px;">
-                        We sent a 6-digit code to<br>
-                        <strong id="otp-email-display" style="color:var(--primary,#6366f1);">your@email.com</strong>
-                      </p>
-                    </div>
-                    <!-- 6 individual OTP boxes -->
-                    <div id="otp-input-row" style="display:flex;gap:8px;justify-content:center;margin-bottom:20px;">
-                      <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" style="width:46px;height:56px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--border,#e2e8f0);border-radius:10px;background:var(--bg-secondary,#f8fafc);outline:none;">
-                      <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" style="width:46px;height:56px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--border,#e2e8f0);border-radius:10px;background:var(--bg-secondary,#f8fafc);outline:none;">
-                      <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" style="width:46px;height:56px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--border,#e2e8f0);border-radius:10px;background:var(--bg-secondary,#f8fafc);outline:none;">
-                      <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" style="width:46px;height:56px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--border,#e2e8f0);border-radius:10px;background:var(--bg-secondary,#f8fafc);outline:none;">
-                      <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" style="width:46px;height:56px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--border,#e2e8f0);border-radius:10px;background:var(--bg-secondary,#f8fafc);outline:none;">
-                      <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" style="width:46px;height:56px;text-align:center;font-size:22px;font-weight:700;border:2px solid var(--border,#e2e8f0);border-radius:10px;background:var(--bg-secondary,#f8fafc);outline:none;">
-                    </div>
-                    <div style="text-align:center;font-size:13px;color:var(--text-secondary,#64748b);margin-bottom:16px;">
-                      ⏱ Code expires in <strong id="otp-timer">10:00</strong>
-                    </div>
-                    <button type="button" class="btn btn-primary btn-lg" id="verify-otp-btn" style="width:100%;justify-content:center;">
-                      ✅ Verify Code
-                    </button>
-                    <p style="text-align:center;margin-top:14px;font-size:13px;color:var(--text-secondary,#64748b);">
-                      Didn't get it? <a href="#" id="resend-otp-btn" style="color:var(--primary,#6366f1);font-weight:600;">Resend code</a>
-                      &nbsp;·&nbsp; <a href="#" id="back-to-step1" style="color:var(--text-secondary,#64748b);">Change email</a>
-                    </p>
+                  <div class="form-group">
+                    <label>Phone <span style="color:var(--text-secondary,#64748b);font-size:12px;">(optional)</span></label>
+                    <input type="tel" class="form-input" id="register-phone" placeholder="+1 (555) 000-0000" autocomplete="tel">
                   </div>
-
-                  <!-- Step 3: Password -->
-                  <div id="reg-step-3" style="display:none;">
-                    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:10px;margin-bottom:20px;">
-                      <span style="font-size:18px;">✅</span>
-                      <div>
-                        <div style="font-size:13px;font-weight:600;color:#16a34a;">Email Verified</div>
-                        <div id="verified-email-label" style="font-size:12px;color:var(--text-secondary,#64748b);"></div>
-                      </div>
+                  <div class="form-group">
+                    <label>Create Password <span class="required">*</span></label>
+                    <div class="password-field">
+                      <input type="password" class="form-input" id="register-password" placeholder="Create a strong password" autocomplete="new-password" required>
+                      <button type="button" class="password-toggle" id="register-pw-toggle">👁️</button>
                     </div>
-                    <div class="form-group">
-                      <label>Create Password <span class="required">*</span></label>
-                      <div class="password-field">
-                        <input type="password" class="form-input" id="register-password" placeholder="Create a strong password" autocomplete="new-password">
-                        <button type="button" class="password-toggle" id="register-pw-toggle">👁️</button>
-                      </div>
-                      <div class="password-strength" id="password-strength">
-                        <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
-                        <span class="strength-text" id="strength-text"></span>
-                      </div>
-                      <div class="password-rules" id="password-rules">
-                        <span id="rule-length">✗ 8+ characters</span>
-                        <span id="rule-upper">✗ Uppercase</span>
-                        <span id="rule-lower">✗ Lowercase</span>
-                        <span id="rule-number">✗ Number</span>
-                        <span id="rule-special">✗ Special char</span>
-                      </div>
+                    <div class="password-strength" id="password-strength">
+                      <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+                      <span class="strength-text" id="strength-text"></span>
                     </div>
-                    <div class="form-group">
-                      <label>Confirm Password <span class="required">*</span></label>
-                      <div class="password-field">
-                        <input type="password" class="form-input" id="register-confirm" placeholder="Confirm your password" autocomplete="new-password">
-                      </div>
+                    <div class="password-rules" id="password-rules">
+                      <span id="rule-length">✗ 8+ characters</span>
+                      <span id="rule-upper">✗ Uppercase</span>
+                      <span id="rule-lower">✗ Lowercase</span>
+                      <span id="rule-number">✗ Number</span>
+                      <span id="rule-special">✗ Special char</span>
                     </div>
-                    <button type="button" class="btn btn-primary btn-lg" id="register-submit" style="width:100%;justify-content:center;">
-                      🚀 Create My Account
-                    </button>
-                    <p class="auth-switch" style="margin-top:16px;">Already have an account? <a href="#" id="switch-to-login-2">Log in</a></p>
                   </div>
-
-                </div><!-- /register-form -->
+                  <div class="form-group">
+                    <label>Confirm Password <span class="required">*</span></label>
+                    <div class="password-field">
+                      <input type="password" class="form-input" id="register-confirm" placeholder="Confirm your password" autocomplete="new-password" required>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-lg" id="register-submit-btn" style="width:100%;justify-content:center;">
+                    🚀 Create My Account
+                  </button>
+                  <p class="auth-switch" style="margin-top:16px;">
+                    Already have an account? <a href="#" id="switch-to-login">Log in</a>
+                  </p>
+                </form>
             </div>
         </div>
     </div>

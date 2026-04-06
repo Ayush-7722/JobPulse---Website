@@ -2,7 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const bcrypt  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
-const { User, OtpVerification } = require('../db/mongodb');
+const { User } = require('../db/mongodb');
 const { authenticateToken, sanitize } = require('../middleware/auth');
 
 const JWT_SECRET    = process.env.JWT_SECRET    || 'fallback_secret_change_me';
@@ -29,105 +29,36 @@ function generateToken(user) {
   );
 }
 
-// ── POST /api/auth/send-otp ──
-router.post('/send-otp', async (req, res) => {
-  try {
-    const email = sanitize(req.body.email)?.toLowerCase();
-    const name  = sanitize(req.body.name) || 'User';
-    if (!email) return res.status(400).json({ error: 'Email is required.' });
-    if (!isValidEmail(email)) return res.status(400).json({ error: 'Please enter a valid email address.' });
-
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(409).json({ error: 'An account with this email already exists. Please log in.' });
-
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const recentCount = await OtpVerification.countDocuments({ email, created_at: { $gt: oneHourAgo } });
-    if (recentCount >= 3) return res.status(429).json({ error: 'Too many OTP requests. Please wait an hour.' });
-
-    await OtpVerification.updateMany({ email, is_used: false }, { $set: { is_used: true } });
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 10 * 60 * 1000;
-    await OtpVerification.create({ email, name, otp_code: otp, expires_at: expiresAt });
-
-    const { sendOTPEmail } = require('../services/email');
-    const result = await sendOTPEmail(email, name, otp);
-
-    if (result.sent) return res.json({ message: `Verification code sent to ${email}`, email_sent: true });
-    if (process.env.NODE_ENV === 'production') {
-      return res.status(500).json({ error: 'Email service not configured. Set SMTP_USER and SMTP_PASS.' });
-    }
-    return res.json({ message: 'OTP generated (dev mode)', email_sent: false, dev_otp: otp });
-  } catch (err) {
-    console.error('Send OTP error:', err);
-    res.status(500).json({ error: 'Failed to send OTP. Please try again.' });
-  }
-});
-
-// ── POST /api/auth/verify-otp ──
-router.post('/verify-otp', async (req, res) => {
-  try {
-    const email = sanitize(req.body.email)?.toLowerCase();
-    const otp   = sanitize(req.body.otp)?.replace(/\s/g, '');
-    if (!email || !otp) return res.status(400).json({ error: 'Email and OTP are required.' });
-    if (!/^\d{6}$/.test(otp)) return res.status(400).json({ error: 'OTP must be a 6-digit number.' });
-
-    const record = await OtpVerification.findOne({ email, is_used: false }).sort({ created_at: -1 });
-    if (!record) return res.status(400).json({ error: 'No pending OTP. Please request a new one.' });
-    if (Date.now() > record.expires_at) {
-      await OtpVerification.findByIdAndUpdate(record._id, { is_used: true });
-      return res.status(400).json({ error: 'OTP expired. Please request a new code.' });
-    }
-
-    await OtpVerification.findByIdAndUpdate(record._id, { $inc: { attempts: 1 } });
-    const updated = await OtpVerification.findById(record._id);
-    if (updated.attempts > 5) {
-      await OtpVerification.findByIdAndUpdate(record._id, { is_used: true });
-      return res.status(400).json({ error: 'Too many attempts. Please request a new OTP.' });
-    }
-
-    if (record.otp_code !== otp) {
-      const remaining = 5 - updated.attempts;
-      return res.status(400).json({ error: `Invalid OTP. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.` });
-    }
-
-    await OtpVerification.findByIdAndUpdate(record._id, { is_used: true });
-    const verifiedToken = jwt.sign(
-      { email, name: record.name, verified: true, purpose: 'registration' },
-      JWT_SECRET, { expiresIn: '15m' }
-    );
-    res.json({ message: 'Email verified successfully!', verified: true, verified_token: verifiedToken });
-  } catch (err) {
-    console.error('Verify OTP error:', err);
-    res.status(500).json({ error: 'OTP verification failed. Please try again.' });
-  }
-});
-
-// ── POST /api/auth/register ──
+// ── POST /api/auth/register (Direct Email/Password Registration) ──
 router.post('/register', async (req, res) => {
   try {
-    const { verified_token, password, phone } = req.body;
-    let verified;
-    try { verified = jwt.verify(verified_token, JWT_SECRET); }
-    catch { return res.status(400).json({ error: 'Email verification expired. Please verify your email again.' }); }
-
-    if (!verified.verified || verified.purpose !== 'registration') {
-      return res.status(400).json({ error: 'Invalid verification token.' });
+    const { full_name, email, password, phone } = req.body;
+    
+    if (!email || !password || !full_name) {
+      return res.status(400).json({ error: 'Name, Email and Password are required.' });
     }
 
-    const { email, name: full_name } = verified;
-    if (!password) return res.status(400).json({ error: 'Password is required.' });
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
+    }
 
     const passwordErrors = validatePassword(password);
-    if (passwordErrors.length > 0) return res.status(400).json({ error: `Password must contain: ${passwordErrors.join(', ')}.` });
+    if (passwordErrors.length > 0) {
+      return res.status(400).json({ error: `Password must contain: ${passwordErrors.join(', ')}.` });
+    }
 
     const existing = await User.findOne({ email: email.toLowerCase() });
-    if (existing) return res.status(409).json({ error: 'An account with this email already exists.' });
+    if (existing) {
+      return res.status(409).json({ error: 'An account with this email already exists.' });
+    }
 
     const password_hash = bcrypt.hashSync(password, SALT_ROUNDS);
     const user = await User.create({
-      full_name, email: email.toLowerCase(), password_hash,
-      phone: sanitize(phone) || null, role: 'user'
+      full_name: sanitize(full_name),
+      email: email.toLowerCase(),
+      password_hash,
+      phone: sanitize(phone) || null,
+      role: 'user'
     });
 
     const token = generateToken(user);

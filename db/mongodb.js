@@ -106,19 +106,7 @@ const applicationSchema = new mongoose.Schema({
 applicationSchema.index({ user: 1 });
 applicationSchema.index({ job: 1, user: 1 }, { unique: true }); // prevent duplicate applications
 
-// ── OTP Verification ──
-const otpSchema = new mongoose.Schema({
-  email: { type: String, required: true, lowercase: true },
-  name: { type: String, default: 'User' },
-  otp_code: { type: String, required: true },
-  expires_at: { type: Number, required: true },  // Unix ms timestamp
-  is_used: { type: Boolean, default: false },
-  attempts: { type: Number, default: 0 },
-}, { timestamps: { createdAt: 'created_at', updatedAt: false } });
-
-otpSchema.index({ email: 1, is_used: 1 });
-// Auto-expire documents after 1 hour via TTL index
-otpSchema.index({ created_at: 1 }, { expireAfterSeconds: 3600 });
+// OTP Verification model removed as direct email/password registration is now active.
 
 // ─────────────────────────────────────────────
 // Export Models
@@ -127,7 +115,6 @@ const User = mongoose.model('User', userSchema);
 const Category = mongoose.model('Category', categorySchema);
 const Job = mongoose.model('Job', jobSchema);
 const Application = mongoose.model('Application', applicationSchema);
-const OtpVerification = mongoose.model('OtpVerification', otpSchema);
 
 // ─────────────────────────────────────────────
 // Auto-Seed on First Boot
@@ -261,4 +248,4 @@ async function autoSeed() {
   }
 }
 
-module.exports = { User, Category, Job, Application, OtpVerification };
+module.exports = { User, Category, Job, Application };
