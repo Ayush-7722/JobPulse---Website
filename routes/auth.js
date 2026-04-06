@@ -34,67 +34,174 @@ function generateToken(user) {
   );
 }
 
+// ── POST /api/auth/send-otp ──
+// Step 1: User enters name + email → sends 6-digit OTP to their email
+router.post('/send-otp', async (req, res) => {
+  try {
+    const email = sanitize(req.body.email)?.toLowerCase();
+    const name  = sanitize(req.body.name)  || 'User';
+
+    if (!email) return res.status(400).json({ error: 'Email is required.' });
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'Please enter a valid email address.' });
+
+    // Check if email already registered
+    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    if (existing) return res.status(409).json({ error: 'An account with this email already exists. Please log in.' });
+
+    // Rate limit: max 3 OTP requests per email per hour
+    const recentCount = db.prepare(
+      "SELECT COUNT(*) as c FROM otp_verifications WHERE email = ? AND created_at > datetime('now', '-1 hour')"
+    ).get(email);
+    if (recentCount.c >= 3) {
+      return res.status(429).json({ error: 'Too many OTP requests. Please wait an hour before trying again.' });
+    }
+
+    // Invalidate any previous unused OTPs for this email
+    db.prepare("UPDATE otp_verifications SET is_used = 1 WHERE email = ? AND is_used = 0").run(email);
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    // Store OTP
+    db.prepare(
+      'INSERT INTO otp_verifications (email, name, otp_code, expires_at) VALUES (?, ?, ?, ?)'
+    ).run(email, name, otp, expiresAt);
+
+    // Send OTP email
+    const { sendOTPEmail } = require('../services/email');
+    const result = await sendOTPEmail(email, name, otp);
+
+    if (result.sent) {
+      return res.json({ message: `Verification code sent to ${email}`, email_sent: true });
+    } else {
+      // SMTP not configured — return error for production
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(500).json({
+          error: 'Email service not configured. Please contact the administrator.',
+          config_hint: 'Set SMTP_USER and SMTP_PASS environment variables.'
+        });
+      }
+      // Development fallback: return OTP for testing
+      return res.json({
+        message: `OTP generated (dev mode — email not sent)`,
+        email_sent: false,
+        dev_otp: otp, // ← only visible in dev; remove in production
+      });
+    }
+  } catch (err) {
+    console.error('Send OTP error:', err.message);
+    res.status(500).json({ error: 'Failed to send OTP. Please try again.' });
+  }
+});
+
+// ── POST /api/auth/verify-otp ──
+// Step 2: User submits the OTP received in email
+router.post('/verify-otp', (req, res) => {
+  try {
+    const email = sanitize(req.body.email)?.toLowerCase();
+    const otp   = sanitize(req.body.otp)?.replace(/\s/g, '');
+
+    if (!email || !otp) return res.status(400).json({ error: 'Email and OTP are required.' });
+    if (!/^\d{6}$/.test(otp)) return res.status(400).json({ error: 'OTP must be a 6-digit number.' });
+
+    // Find latest unused OTP for this email
+    const record = db.prepare(
+      'SELECT * FROM otp_verifications WHERE email = ? AND is_used = 0 ORDER BY created_at DESC LIMIT 1'
+    ).get(email);
+
+    if (!record) {
+      return res.status(400).json({ error: 'No pending OTP for this email. Please request a new one.' });
+    }
+
+    // Check expiry
+    if (Date.now() > record.expires_at) {
+      db.prepare('UPDATE otp_verifications SET is_used = 1 WHERE id = ?').run(record.id);
+      return res.status(400).json({ error: 'OTP has expired. Please request a new code.' });
+    }
+
+    // Track attempts (max 5)
+    db.prepare('UPDATE otp_verifications SET attempts = attempts + 1 WHERE id = ?').run(record.id);
+    const updated = db.prepare('SELECT attempts FROM otp_verifications WHERE id = ?').get(record.id);
+    if (updated.attempts > 5) {
+      db.prepare('UPDATE otp_verifications SET is_used = 1 WHERE id = ?').run(record.id);
+      return res.status(400).json({ error: 'Too many incorrect attempts. Please request a new OTP.' });
+    }
+
+    // Verify OTP
+    if (record.otp_code !== otp) {
+      const remaining = 5 - updated.attempts;
+      return res.status(400).json({ error: `Invalid OTP. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.` });
+    }
+
+    // ✅ OTP is valid — mark as used
+    db.prepare('UPDATE otp_verifications SET is_used = 1 WHERE id = ?').run(record.id);
+
+    // Issue a short-lived "email verified" token (valid 15 min — just for registration)
+    const verifiedToken = jwt.sign(
+      { email, name: record.name, verified: true, purpose: 'registration' },
+      JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+
+    res.json({
+      message: 'Email verified successfully!',
+      verified: true,
+      verified_token: verifiedToken,
+    });
+  } catch (err) {
+    console.error('Verify OTP error:', err.message);
+    res.status(500).json({ error: 'OTP verification failed. Please try again.' });
+  }
+});
+
 // ── POST /api/auth/register ──
+// Step 3: Create account using the verified_token from step 2
 router.post('/register', (req, res) => {
   try {
-    const full_name = sanitize(req.body.full_name);
-    const email = sanitize(req.body.email)?.toLowerCase();
-    const password = req.body.password;
-    const phone = sanitize(req.body.phone) || null;
+    const { verified_token, password, phone } = req.body;
 
-    // Validation
-    if (!full_name || !email || !password) {
-      return res.status(400).json({ error: 'Name, email, and password are required.' });
+    // Validate the verified_token
+    let verified;
+    try {
+      verified = jwt.verify(verified_token, JWT_SECRET);
+    } catch {
+      return res.status(400).json({ error: 'Email verification expired. Please verify your email again.' });
     }
 
-    if (full_name.length < 2 || full_name.length > 100) {
-      return res.status(400).json({ error: 'Name must be between 2 and 100 characters.' });
+    if (!verified.verified || verified.purpose !== 'registration') {
+      return res.status(400).json({ error: 'Invalid verification token.' });
     }
 
-    if (!isValidEmail(email)) {
-      return res.status(400).json({ error: 'Please enter a valid email address.' });
-    }
+    const { email, name: full_name } = verified;
+    const cleanPhone = sanitize(phone) || null;
+
+    if (!password) return res.status(400).json({ error: 'Password is required.' });
 
     const passwordErrors = validatePassword(password);
     if (passwordErrors.length > 0) {
-      return res.status(400).json({
-        error: `Password must contain: ${passwordErrors.join(', ')}.`
-      });
+      return res.status(400).json({ error: `Password must contain: ${passwordErrors.join(', ')}.` });
     }
 
-    // Check if email already exists
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    // Check email not already taken (double-check)
+    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase());
     if (existing) {
       return res.status(409).json({ error: 'An account with this email already exists.' });
     }
 
-    // Hash password
+    // Hash and insert
     const password_hash = bcrypt.hashSync(password, SALT_ROUNDS);
+    const result = db.prepare(
+      "INSERT INTO users (full_name, email, password_hash, phone, role) VALUES (?, ?, ?, ?, 'user')"
+    ).run(full_name, email.toLowerCase(), password_hash, cleanPhone);
 
-    // Create user
-    const result = db.prepare(`
-      INSERT INTO users (full_name, email, password_hash, phone, role)
-      VALUES (?, ?, ?, ?, 'user')
-    `).run(full_name, email, password_hash, phone);
-
-    const user = {
-      id: result.lastInsertRowid,
-      full_name,
-      email,
-      role: 'user'
-    };
-
+    const user = { id: result.lastInsertRowid, full_name, email: email.toLowerCase(), role: 'user' };
     const token = generateToken(user);
 
     res.status(201).json({
-      message: 'Account created successfully!',
+      message: 'Account created successfully! Welcome to JobPulse 🎉',
       token,
-      user: {
-        id: user.id,
-        full_name: user.full_name,
-        email: user.email,
-        role: user.role
-      }
+      user: { id: user.id, full_name: user.full_name, email: user.email, role: user.role }
     });
   } catch (err) {
     console.error('Register error:', err.message);

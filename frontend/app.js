@@ -448,21 +448,23 @@ function closeAllModals() {
 }
 
 function showAuthModal(mode = 'login') {
-  const loginForm = document.getElementById('login-form');
+  const loginForm    = document.getElementById('login-form');
   const registerForm = document.getElementById('register-form');
-  const title = document.getElementById('auth-modal-title');
+  const title    = document.getElementById('auth-modal-title');
   const subtitle = document.getElementById('auth-modal-subtitle');
 
   if (mode === 'login') {
-    loginForm.style.display = 'flex';
+    loginForm.style.display    = 'flex';
     registerForm.style.display = 'none';
-    title.textContent = 'Log In';
+    title.textContent    = 'Log In';
     subtitle.textContent = 'Welcome back to JobPulse';
   } else {
-    loginForm.style.display = 'none';
-    registerForm.style.display = 'flex';
-    title.textContent = 'Create Account';
-    subtitle.textContent = 'Join JobPulse to apply for jobs';
+    loginForm.style.display    = 'none';
+    registerForm.style.display = 'block';
+    title.textContent    = 'Create Your Account';
+    subtitle.textContent = 'Join thousands of users on JobPulse';
+    // Always start from step 1
+    if (typeof setRegStep === 'function') setRegStep(1);
   }
 
   openModal('auth-modal-overlay');
@@ -841,14 +843,10 @@ function init() {
     if (e.target === e.currentTarget) closeModal('auth-modal-overlay');
   });
 
-  // Switch between login/register
+  // Switch between login/register (login-form side)
   document.getElementById('switch-to-register').addEventListener('click', (e) => {
     e.preventDefault();
     showAuthModal('register');
-  });
-  document.getElementById('switch-to-login').addEventListener('click', (e) => {
-    e.preventDefault();
-    showAuthModal('login');
   });
 
   // Password visibility toggles
@@ -942,33 +940,84 @@ function init() {
     }
   });
 
-  // Register form
-  document.getElementById('register-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const password = document.getElementById('register-password').value;
-    const confirm = document.getElementById('register-confirm').value;
+  // ══════════════════════════════════════════════
+  // REGISTRATION — 3-step OTP flow
+  // ══════════════════════════════════════════════
+  let _verifiedToken = null;  // store after OTP verification
+  let _otpTimerInterval = null;
 
-    if (password !== confirm) {
-      showToast('Passwords do not match.', 'error');
-      return;
-    }
+  function setRegStep(step) {
+    [1,2,3].forEach(n => {
+      document.getElementById(`reg-step-${n}`).style.display = n === step ? 'block' : 'none';
+      const tab = document.getElementById(`step-tab-${n}`);
+      if (n < step) {
+        tab.style.background = 'rgba(99,102,241,0.2)';
+        tab.style.color = 'var(--primary,#6366f1)';
+      } else if (n === step) {
+        tab.style.background = 'var(--primary,#6366f1)';
+        tab.style.color = '#fff';
+      } else {
+        tab.style.background = 'var(--bg-secondary,#f1f5f9)';
+        tab.style.color = 'var(--text-secondary,#64748b)';
+      }
+    });
+    if (_otpTimerInterval) clearInterval(_otpTimerInterval);
+    if (step === 2) startOTPTimer();
+  }
 
-    const btn = document.getElementById('register-submit');
+  function startOTPTimer(seconds = 600) {
+    let remaining = seconds;
+    const el = document.getElementById('otp-timer');
+    _otpTimerInterval = setInterval(() => {
+      remaining--;
+      const m = String(Math.floor(remaining / 60)).padStart(2,'0');
+      const s = String(remaining % 60).padStart(2,'0');
+      if (el) el.textContent = `${m}:${s}`;
+      if (remaining <= 0) {
+        clearInterval(_otpTimerInterval);
+        if (el) el.textContent = 'Expired';
+      }
+    }, 1000);
+  }
+
+  // OTP digit boxes — auto-advance and backspace support
+  document.querySelectorAll('.otp-digit').forEach((input, i, all) => {
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/\D/g, '').slice(0,1);
+      if (input.value && i < all.length - 1) all[i+1].focus();
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !input.value && i > 0) all[i-1].focus();
+    });
+    input.addEventListener('focus', () => {
+      input.style.borderColor = 'var(--primary,#6366f1)';
+    });
+    input.addEventListener('blur', () => {
+      input.style.borderColor = 'var(--border,#e2e8f0)';
+    });
+  });
+
+  // Step 1 — Send OTP
+  document.getElementById('send-otp-btn').addEventListener('click', async () => {
+    const name  = document.getElementById('register-name').value.trim();
+    const email = document.getElementById('register-email').value.trim();
+    if (!name)  return showToast('Please enter your full name.', 'error');
+    if (!email) return showToast('Please enter your email address.', 'error');
+
+    const btn = document.getElementById('send-otp-btn');
     const orig = btn.innerHTML;
-    btn.innerHTML = '⏳ Creating account...';
+    btn.innerHTML = '⏳ Sending...';
     btn.disabled = true;
-
     try {
-      const data = await api.post('/auth/register', {
-        full_name: document.getElementById('register-name').value,
-        email: document.getElementById('register-email').value,
-        phone: document.getElementById('register-phone').value,
-        password: password,
-      });
-      saveAuth(data.token, data.user);
-      closeModal('auth-modal-overlay');
-      showToast(`Welcome to JobPulse, ${data.user.full_name}! 🎉`, 'success');
-      e.target.reset();
+      const data = await api.post('/auth/send-otp', { name, email });
+      document.getElementById('otp-email-display').textContent = email;
+      setRegStep(2);
+      document.querySelectorAll('.otp-digit')[0].focus();
+      if (data.email_sent) {
+        showToast(`📧 Verification code sent to ${email}`, 'success');
+      } else if (data.dev_otp) {
+        showToast(`⚠️ Dev mode — OTP: ${data.dev_otp}`, 'info');
+      }
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
@@ -976,6 +1025,99 @@ function init() {
       btn.disabled = false;
     }
   });
+
+  // Step 2 — Verify OTP
+  document.getElementById('verify-otp-btn').addEventListener('click', async () => {
+    const email = document.getElementById('register-email').value.trim();
+    const otp   = [...document.querySelectorAll('.otp-digit')].map(i => i.value).join('');
+    if (otp.length < 6) return showToast('Please enter all 6 digits of the OTP.', 'error');
+
+    const btn = document.getElementById('verify-otp-btn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '⏳ Verifying...';
+    btn.disabled = true;
+    try {
+      const data = await api.post('/auth/verify-otp', { email, otp });
+      _verifiedToken = data.verified_token;
+      document.getElementById('verified-email-label').textContent = email;
+      setRegStep(3);
+      document.getElementById('register-password').focus();
+      showToast('✅ Email verified! Now create your password.', 'success');
+    } catch (err) {
+      // Shake OTP inputs on error
+      document.getElementById('otp-input-row').style.animation = 'shake 0.4s ease';
+      setTimeout(() => document.getElementById('otp-input-row').style.animation = '', 500);
+      showToast(err.message, 'error');
+    } finally {
+      btn.innerHTML = orig;
+      btn.disabled = false;
+    }
+  });
+
+  // Resend OTP
+  document.getElementById('resend-otp-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const name  = document.getElementById('register-name').value.trim();
+    const email = document.getElementById('register-email').value.trim();
+    try {
+      const data = await api.post('/auth/send-otp', { name, email });
+      document.querySelectorAll('.otp-digit').forEach(i => i.value = '');
+      document.querySelectorAll('.otp-digit')[0].focus();
+      if (_otpTimerInterval) clearInterval(_otpTimerInterval);
+      startOTPTimer();
+      if (data.email_sent) showToast('📧 New code sent!', 'success');
+      else if (data.dev_otp) showToast(`Dev OTP: ${data.dev_otp}`, 'info');
+    } catch (err) { showToast(err.message, 'error'); }
+  });
+
+  // Back to step 1 (change email)
+  document.getElementById('back-to-step1').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.otp-digit').forEach(i => i.value = '');
+    setRegStep(1);
+  });
+
+  // Step 3 — Create Account
+  document.getElementById('register-submit').addEventListener('click', async () => {
+    if (!_verifiedToken) return showToast('Please verify your email first.', 'error');
+    const password = document.getElementById('register-password').value;
+    const confirm  = document.getElementById('register-confirm').value;
+    if (!password) return showToast('Please enter a password.', 'error');
+    if (password !== confirm) return showToast('Passwords do not match.', 'error');
+
+    const btn = document.getElementById('register-submit');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '⏳ Creating account...';
+    btn.disabled = true;
+    try {
+      const data = await api.post('/auth/register', {
+        verified_token: _verifiedToken,
+        password,
+        phone: document.getElementById('register-phone').value.trim(),
+      });
+      saveAuth(data.token, data.user);
+      closeModal('auth-modal-overlay');
+      showToast(`🎉 Welcome to JobPulse, ${data.user.full_name}!`, 'success');
+      _verifiedToken = null;
+      // Reset form
+      ['register-name','register-email','register-phone','register-password','register-confirm']
+        .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+      document.querySelectorAll('.otp-digit').forEach(i => i.value = '');
+      setRegStep(1);
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      btn.innerHTML = orig;
+      btn.disabled = false;
+    }
+  });
+
+  // "Log in" links from register section
+  ['switch-to-login','switch-to-login-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', (e) => { e.preventDefault(); showAuthModal('login'); });
+  });
+
 
   // Logout
   document.getElementById('logout-btn').addEventListener('click', (e) => {

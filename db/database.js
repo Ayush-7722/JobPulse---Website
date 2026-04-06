@@ -61,6 +61,17 @@ db.exec(`
     FOREIGN KEY (category_id) REFERENCES categories(id)
   );
 
+  CREATE TABLE IF NOT EXISTS otp_verifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL,
+    name TEXT,
+    otp_code TEXT NOT NULL,
+    expires_at INTEGER NOT NULL,
+    is_used INTEGER DEFAULT 0,
+    attempts INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS applications (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     job_id INTEGER NOT NULL,
@@ -91,6 +102,7 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_applications_user ON applications(user_id);
   CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
   CREATE INDEX IF NOT EXISTS idx_applications_created ON applications(created_at);
+  CREATE INDEX IF NOT EXISTS idx_otp_email ON otp_verifications(email);
 `);
 
 // ── Scalability: tuning for better performance ──
