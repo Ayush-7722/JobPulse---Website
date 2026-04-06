@@ -1,0 +1,9 @@
+node_modules/
+.env
+portal.db
+db/portal.db
+db/portal.db-shm
+db/portal.db-wal
+uploads/
+*.log
+.DS_Store

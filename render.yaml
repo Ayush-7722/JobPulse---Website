@@ -1,0 +1,29 @@
+# ── Runtime ──
+node: "20.x"
+
+# ── Build command ──
+buildCommand: npm install
+
+# ── Start command ──
+startCommand: node server.js
+
+# ── Environment ──
+envVars:
+  - key: NODE_ENV
+    value: production
+  - key: PORT
+    value: 10000
+  - key: JWT_SECRET
+    generateValue: true
+  - key: JWT_EXPIRES_IN
+    value: 7d
+  - key: BCRYPT_SALT_ROUNDS
+    value: 12
+  - key: RATE_LIMIT_WINDOW_MS
+    value: 900000
+  - key: RATE_LIMIT_MAX_REQUESTS
+    value: 200
+  - key: RAPIDAPI_KEY
+    value: c0dcff6f9cmsh19b6c515ccaaa14p1524a5jsnde8761cb77bf
+  - key: RAPIDAPI_LINKEDIN_HOST
+    value: linkedin-jobs-api2.p.rapidapi.com
