@@ -83,9 +83,22 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_jobs_type ON jobs(type);
   CREATE INDEX IF NOT EXISTS idx_jobs_work_mode ON jobs(work_mode);
   CREATE INDEX IF NOT EXISTS idx_jobs_featured ON jobs(is_featured);
+  CREATE INDEX IF NOT EXISTS idx_jobs_active ON jobs(is_active);
+  CREATE INDEX IF NOT EXISTS idx_jobs_level ON jobs(experience_level);
+  CREATE INDEX IF NOT EXISTS idx_jobs_deadline ON jobs(deadline);
+  CREATE INDEX IF NOT EXISTS idx_jobs_salary ON jobs(salary_min, salary_max);
   CREATE INDEX IF NOT EXISTS idx_applications_job ON applications(job_id);
   CREATE INDEX IF NOT EXISTS idx_applications_user ON applications(user_id);
+  CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
+  CREATE INDEX IF NOT EXISTS idx_applications_created ON applications(created_at);
 `);
+
+// ── Scalability: tuning for better performance ──
+db.pragma('cache_size = -32000');    // 32 MB page cache
+db.pragma('temp_store = MEMORY');    // temp tables in RAM
+db.pragma('mmap_size = 268435456'); // 256 MB memory-mapped I/O
+db.pragma('synchronous = NORMAL');  // faster writes, still safe with WAL
+
 
 // ── Auto-seed jobs on first boot ──
 const jobCount = db.prepare('SELECT COUNT(*) as count FROM jobs').get();
@@ -152,23 +165,73 @@ if (jobCount.count === 0) {
   }
 }
 
-// ── Auto-seed demo users (runs every boot, INSERT OR IGNORE is safe) ──
+// ── Auto-seed real-world users ──
 try {
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
   if (userCount.count === 0) {
-    console.log('👤 No users found — seeding demo accounts...');
+    console.log('👤 Seeding 20 real-world user accounts...');
     const bcrypt = require('bcryptjs');
-    const demoPasswordHash  = bcrypt.hashSync('Demo@1234', 10);
-    const adminPasswordHash = bcrypt.hashSync('Admin@1234', 10);
+
+    // All seeded users share password: JobPulse@1
+    // Admin account:                   Admin@JobPulse1
+    const userHash  = bcrypt.hashSync('JobPulse@1',      10);
+    const adminHash = bcrypt.hashSync('Admin@JobPulse1', 10);
+
+    const users = [
+      // ── Admins ──
+      { name: 'Ayush Raj',          email: 'ayush@jobpulse.com',     phone: '+91-9876543210', role: 'admin',  hash: adminHash },
+      { name: 'Priya Sharma',       email: 'admin@jobpulse.com',     phone: '+91-9988776655', role: 'admin',  hash: adminHash },
+
+      // ── Indian users ──
+      { name: 'Arjun Mehta',        email: 'arjun.mehta@gmail.com',      phone: '+91-9123456789', role: 'user', hash: userHash },
+      { name: 'Sneha Patel',        email: 'sneha.patel@gmail.com',      phone: '+91-9234567890', role: 'user', hash: userHash },
+      { name: 'Rohan Verma',        email: 'rohan.verma@outlook.com',    phone: '+91-9345678901', role: 'user', hash: userHash },
+      { name: 'Ananya Krishnan',    email: 'ananya.k@gmail.com',         phone: '+91-9456789012', role: 'user', hash: userHash },
+      { name: 'Vikram Singh',       email: 'vikram.singh@yahoo.com',     phone: '+91-9567890123', role: 'user', hash: userHash },
+      { name: 'Kavita Nair',        email: 'kavita.nair@gmail.com',      phone: '+91-9678901234', role: 'user', hash: userHash },
+
+      // ── American users ──
+      { name: 'James Carter',       email: 'james.carter@gmail.com',     phone: '+1-415-555-0192', role: 'user', hash: userHash },
+      { name: 'Emily Johnson',      email: 'emily.johnson@outlook.com',  phone: '+1-212-555-0147', role: 'user', hash: userHash },
+      { name: 'Michael Thompson',   email: 'michael.t@gmail.com',        phone: '+1-312-555-0183', role: 'user', hash: userHash },
+      { name: 'Sarah Williams',     email: 'sarah.w@gmail.com',          phone: '+1-650-555-0134', role: 'user', hash: userHash },
+
+      // ── European users ──
+      { name: 'Lucas Müller',       email: 'lucas.muller@gmail.com',     phone: '+49-30-12345678', role: 'user', hash: userHash },
+      { name: 'Sophie Dubois',      email: 'sophie.dubois@gmail.com',    phone: '+33-1-23456789',  role: 'user', hash: userHash },
+      { name: 'Marco Rossi',        email: 'marco.rossi@outlook.com',    phone: '+39-02-12345678', role: 'user', hash: userHash },
+
+      // ── Asian users ──
+      { name: 'Yuki Tanaka',        email: 'yuki.tanaka@gmail.com',      phone: '+81-3-1234-5678',  role: 'user', hash: userHash },
+      { name: 'Wei Zhang',          email: 'wei.zhang@gmail.com',        phone: '+86-10-12345678',  role: 'user', hash: userHash },
+      { name: 'Min-jun Lee',        email: 'minjun.lee@gmail.com',       phone: '+82-2-1234-5678',  role: 'user', hash: userHash },
+
+      // ── Demo account (easy access) ──
+      { name: 'Demo User',          email: 'demo@jobpulse.com',          phone: '+1-800-555-0100',  role: 'user', hash: bcrypt.hashSync('Demo@1234', 10) },
+    ];
+
     const insertUser = db.prepare(`
-      INSERT OR IGNORE INTO users (full_name, email, password_hash, role, is_active)
-      VALUES (?, ?, ?, ?, 1)
+      INSERT OR IGNORE INTO users (full_name, email, password_hash, phone, role, is_active)
+      VALUES (?, ?, ?, ?, ?, 1)
     `);
     db.transaction(() => {
-      insertUser.run('Demo User',  'demo@jobpulse.com',  demoPasswordHash,  'user');
-      insertUser.run('Admin User', 'admin@jobpulse.com', adminPasswordHash, 'admin');
+      users.forEach(u => insertUser.run(u.name, u.email, u.hash, u.phone, u.role));
     })();
-    console.log('✅ Demo users seeded: demo@jobpulse.com / Demo@1234 | admin@jobpulse.com / Admin@1234');
+
+    console.log(`✅ ${users.length} users seeded`);
+    console.log('   🔑 User password:  JobPulse@1');
+    console.log('   🔑 Admin password: Admin@JobPulse1');
+    console.log('   🎯 Demo login:     demo@jobpulse.com / Demo@1234');
+  } else {
+    // Ensure demo user always exists even on partial seeding
+    const bcrypt = require('bcryptjs');
+    const demoExists = db.prepare("SELECT id FROM users WHERE email = 'demo@jobpulse.com'").get();
+    if (!demoExists) {
+      const hash = bcrypt.hashSync('Demo@1234', 10);
+      db.prepare("INSERT OR IGNORE INTO users (full_name, email, password_hash, phone, role, is_active) VALUES (?, ?, ?, ?, 'user', 1)")
+        .run('Demo User', 'demo@jobpulse.com', hash, '+1-800-555-0100');
+      console.log('✅ Demo user added to existing database');
+    }
   }
 } catch (err) {
   console.error('⚠️  User seed error:', err.message);
