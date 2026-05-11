@@ -1089,7 +1089,7 @@ function init() {
       const { user } = await api.put('/auth/profile', payload);
       
       state.user = user;
-      updateUIForAuth(true); // Update navbar
+      updateAuthUI(); // Update navbar
       
       closeModal('profile-modal-overlay');
       showToast('Profile updated & secured locally. 🔐', 'success');

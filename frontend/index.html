@@ -359,25 +359,34 @@
                 <form class="apply-form" id="login-form">
                     <div class="form-group">
                         <label>Email <span class="required">*</span></label>
-                        <input type="email" class="form-input" id="login-email" placeholder="your@email.com" required autocomplete="email">
+                        <input type="email" class="form-input" id="login-email" placeholder="your@email.com" required
+                            autocomplete="email">
                     </div>
                     <div class="form-group">
                         <label>Password <span class="required">*</span></label>
                         <div class="password-field">
-                            <input type="password" class="form-input" id="login-password" placeholder="Enter your password" required autocomplete="current-password">
+                            <input type="password" class="form-input" id="login-password"
+                                placeholder="Enter your password" required autocomplete="current-password">
                             <button type="button" class="password-toggle" id="login-pw-toggle">👁️</button>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-lg" id="login-submit" style="width: 100%; justify-content: center;">
+                    <button type="submit" class="btn btn-primary btn-lg" id="login-submit"
+                        style="width: 100%; justify-content: center;">
                         🔐 Log In
                     </button>
                     <!-- Demo hint -->
-                    <div style="margin-top:12px;padding:10px 14px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:10px;text-align:center;font-size:13px;">
+                    <div
+                        style="margin-top:12px;padding:10px 14px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);border-radius:10px;text-align:center;font-size:13px;">
                         🧪 <strong>Demo account:</strong>
-                        <code style="background:rgba(99,102,241,0.12);padding:1px 6px;border-radius:4px;">demo@jobpulse.com</code> /
-                        <code style="background:rgba(99,102,241,0.12);padding:1px 6px;border-radius:4px;">Demo@1234</code>
+                        <code
+                            style="background:rgba(99,102,241,0.12);padding:1px 6px;border-radius:4px;">demo@jobpulse.com</code>
+                        /
+                        <code
+                            style="background:rgba(99,102,241,0.12);padding:1px 6px;border-radius:4px;">Demo@1234</code>
                         <br>
-                        <a href="#" id="demo-login-btn" style="color:var(--primary,#6366f1);font-weight:600;text-decoration:none;margin-top:5px;display:inline-block;">⚡ Click to auto-login with demo →</a>
+                        <a href="#" id="demo-login-btn"
+                            style="color:var(--primary,#6366f1);font-weight:600;text-decoration:none;margin-top:5px;display:inline-block;">⚡
+                            Click to auto-login with demo →</a>
                     </div>
                     <p class="auth-switch">
                         Don't have an account? <a href="#" id="switch-to-register">Sign up</a>
@@ -386,48 +395,57 @@
 
                 <!-- Unified Direct Registration Form -->
                 <form class="apply-form" id="register-form" style="display:none;">
-                  <div class="form-group">
-                    <label>Full Name <span class="required">*</span></label>
-                    <input type="text" class="form-input" id="register-name" placeholder="John Doe" autocomplete="name" required>
-                  </div>
-                  <div class="form-group">
-                    <label>Email Address <span class="required">*</span></label>
-                    <input type="email" class="form-input" id="register-email" placeholder="you@example.com" autocomplete="email" required>
-                  </div>
-                  <div class="form-group">
-                    <label>Phone <span style="color:var(--text-secondary,#64748b);font-size:12px;">(optional)</span></label>
-                    <input type="tel" class="form-input" id="register-phone" placeholder="+1 (555) 000-0000" autocomplete="tel">
-                  </div>
-                  <div class="form-group">
-                    <label>Create Password <span class="required">*</span></label>
-                    <div class="password-field">
-                      <input type="password" class="form-input" id="register-password" placeholder="Create a strong password" autocomplete="new-password" required>
-                      <button type="button" class="password-toggle" id="register-pw-toggle">👁️</button>
+                    <div class="form-group">
+                        <label>Full Name <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="register-name" placeholder="John Doe"
+                            autocomplete="name" required>
                     </div>
-                    <div class="password-strength" id="password-strength">
-                      <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
-                      <span class="strength-text" id="strength-text"></span>
+                    <div class="form-group">
+                        <label>Email Address <span class="required">*</span></label>
+                        <input type="email" class="form-input" id="register-email" placeholder="you@example.com"
+                            autocomplete="email" required>
                     </div>
-                    <div class="password-rules" id="password-rules">
-                      <span id="rule-length">✗ 8+ characters</span>
-                      <span id="rule-upper">✗ Uppercase</span>
-                      <span id="rule-lower">✗ Lowercase</span>
-                      <span id="rule-number">✗ Number</span>
-                      <span id="rule-special">✗ Special char</span>
+                    <div class="form-group">
+                        <label>Phone <span
+                                style="color:var(--text-secondary,#64748b);font-size:12px;">(optional)</span></label>
+                        <input type="tel" class="form-input" id="register-phone" placeholder="+1 (555) 000-0000"
+                            autocomplete="tel">
                     </div>
-                  </div>
-                  <div class="form-group">
-                    <label>Confirm Password <span class="required">*</span></label>
-                    <div class="password-field">
-                      <input type="password" class="form-input" id="register-confirm" placeholder="Confirm your password" autocomplete="new-password" required>
+                    <div class="form-group">
+                        <label>Create Password <span class="required">*</span></label>
+                        <div class="password-field">
+                            <input type="password" class="form-input" id="register-password"
+                                placeholder="Create a strong password" autocomplete="new-password" required>
+                            <button type="button" class="password-toggle" id="register-pw-toggle">👁️</button>
+                        </div>
+                        <div class="password-strength" id="password-strength">
+                            <div class="strength-bar">
+                                <div class="strength-fill" id="strength-fill"></div>
+                            </div>
+                            <span class="strength-text" id="strength-text"></span>
+                        </div>
+                        <div class="password-rules" id="password-rules">
+                            <span id="rule-length">✗ 8+ characters</span>
+                            <span id="rule-upper">✗ Uppercase</span>
+                            <span id="rule-lower">✗ Lowercase</span>
+                            <span id="rule-number">✗ Number</span>
+                            <span id="rule-special">✗ Special char</span>
+                        </div>
                     </div>
-                  </div>
-                  <button type="submit" class="btn btn-primary btn-lg" id="register-submit-btn" style="width:100%;justify-content:center;">
-                    🚀 Create My Account
-                  </button>
-                  <p class="auth-switch" style="margin-top:16px;">
-                    Already have an account? <a href="#" id="switch-to-login">Log in</a>
-                  </p>
+                    <div class="form-group">
+                        <label>Confirm Password <span class="required">*</span></label>
+                        <div class="password-field">
+                            <input type="password" class="form-input" id="register-confirm"
+                                placeholder="Confirm your password" autocomplete="new-password" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" id="register-submit-btn"
+                        style="width:100%;justify-content:center;">
+                        🚀 Create My Account
+                    </button>
+                    <p class="auth-switch" style="margin-top:16px;">
+                        Already have an account? <a href="#" id="switch-to-login">Log in</a>
+                    </p>
                 </form>
             </div>
         </div>
@@ -488,41 +506,47 @@
             <div class="modal-body">
                 <form class="apply-form" id="profile-form">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                      <div class="form-group">
-                          <label>Full Name <span class="required">*</span></label>
-                          <input type="text" class="form-input" id="profile-name" required>
-                      </div>
-                      <div class="form-group">
-                          <label>Phone Number 🔒</label>
-                          <input type="tel" class="form-input" id="profile-phone" placeholder="+1-234-567-8900">
-                      </div>
-                      <div class="form-group" style="grid-column: span 2;">
-                          <label>Address 🔒</label>
-                          <input type="text" class="form-input" id="profile-address" placeholder="123 Main St, City, Country">
-                      </div>
-                      <div class="form-group">
-                          <label>Current Job Title</label>
-                          <input type="text" class="form-input" id="profile-job-title" placeholder="e.g. Software Engineer">
-                      </div>
-                      <div class="form-group">
-                          <label>LinkedIn URL</label>
-                          <input type="url" class="form-input" id="profile-linkedin" placeholder="https://linkedin.com/in/you">
-                      </div>
-                      <div class="form-group">
-                          <label>Portfolio URL</label>
-                          <input type="url" class="form-input" id="profile-portfolio" placeholder="https://yourwebsite.com">
-                      </div>
-                      <div class="form-group">
-                          <label>Resume URL</label>
-                          <input type="url" class="form-input" id="profile-resume" placeholder="https://drive.google.com/...">
-                      </div>
-                      <div class="form-group" style="grid-column: span 2;">
-                          <label>Bio</label>
-                          <textarea class="form-input" id="profile-bio" rows="3" placeholder="Tell companies about yourself..."></textarea>
-                      </div>
+                        <div class="form-group">
+                            <label>Full Name <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="profile-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number 🔒</label>
+                            <input type="tel" class="form-input" id="profile-phone" placeholder="+1-234-567-8900">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Address 🔒</label>
+                            <input type="text" class="form-input" id="profile-address"
+                                placeholder="123 Main St, City, Country">
+                        </div>
+                        <div class="form-group">
+                            <label>Current Job Title</label>
+                            <input type="text" class="form-input" id="profile-job-title"
+                                placeholder="e.g. Software Engineer">
+                        </div>
+                        <div class="form-group">
+                            <label>LinkedIn URL</label>
+                            <input type="url" class="form-input" id="profile-linkedin"
+                                placeholder="https://linkedin.com/in/you">
+                        </div>
+                        <div class="form-group">
+                            <label>Portfolio URL</label>
+                            <input type="url" class="form-input" id="profile-portfolio"
+                                placeholder="https://yourwebsite.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Resume URL</label>
+                            <input type="url" class="form-input" id="profile-resume"
+                                placeholder="https://drive.google.com/...">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Bio</label>
+                            <textarea class="form-input" id="profile-bio" rows="3"
+                                placeholder="Tell companies about yourself..."></textarea>
+                        </div>
                     </div>
                     <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 15px;">
-                      🔒 Fields marked with this icon are protected with end-to-end military-grade AES-256 encryption.
+                        🔒 Fields marked with this icon are protected with end-to-end military-grade AES-256 encryption.
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; justify-content: center;">
                         💾 Save Profile

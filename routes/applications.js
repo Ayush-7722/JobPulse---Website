@@ -2,7 +2,7 @@ const express = require('express');
 const router  = express.Router();
 const multer  = require('multer');
 const path    = require('path');
-const { Job, Application } = require('../db/mongodb');
+const db      = require('../db/database');
 const { authenticateToken, sanitize } = require('../middleware/auth');
 
 // Multer config
@@ -24,32 +24,37 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // ── POST /api/applications ──
-router.post('/', authenticateToken, upload.single('resume'), async (req, res) => {
+router.post('/', authenticateToken, upload.single('resume'), (req, res) => {
   try {
     const { job_id, cover_letter, linkedin_url, portfolio_url } = req.body;
     if (!job_id) return res.status(400).json({ error: 'Job ID is required.' });
 
-    const job = await Job.findOne({ _id: job_id, is_active: true });
+    // Check if job exists and is active
+    const job = db.prepare('SELECT id, title, company FROM jobs WHERE id = ? AND is_active = 1').get(job_id);
     if (!job) return res.status(404).json({ error: 'Job not found or no longer active.' });
 
-    const existing = await Application.findOne({ job: job_id, user: req.user.userId });
+    // Check for duplicate application
+    const existing = db.prepare('SELECT id FROM applications WHERE job_id = ? AND user_id = ?').get(job_id, req.user.userId);
     if (existing) return res.status(409).json({ error: 'You have already applied for this position.' });
 
     const resume_path = req.file ? `/uploads/${req.file.filename}` : null;
-    const application = await Application.create({
-      job:           job_id,
-      user:          req.user.userId,
-      full_name:     req.user.full_name,
-      email:         req.user.email,
-      phone:         sanitize(req.body.phone) || null,
+    const result = db.prepare(`
+      INSERT INTO applications (job_id, user_id, full_name, email, phone, resume_path, cover_letter, linkedin_url, portfolio_url, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+    `).run(
+      job_id,
+      req.user.userId,
+      req.user.full_name,
+      req.user.email,
+      sanitize(req.body.phone) || null,
       resume_path,
-      cover_letter:  sanitize(cover_letter)  || null,
-      linkedin_url:  sanitize(linkedin_url)  || null,
-      portfolio_url: sanitize(portfolio_url) || null,
-    });
+      sanitize(cover_letter)  || null,
+      sanitize(linkedin_url)  || null,
+      sanitize(portfolio_url) || null,
+    );
 
     res.status(201).json({
-      id: application._id,
+      id: result.lastInsertRowid,
       message: `Application submitted for ${job.title} at ${job.company}!`
     });
   } catch (err) {
@@ -58,38 +63,35 @@ router.post('/', authenticateToken, upload.single('resume'), async (req, res) =>
 });
 
 // ── GET /api/applications/my ──
-router.get('/my', authenticateToken, async (req, res) => {
+router.get('/my', authenticateToken, (req, res) => {
   try {
-    const applications = await Application
-      .find({ user: req.user.userId })
-      .populate('job', 'title company location')
-      .sort({ created_at: -1 })
-      .lean();
+    const applications = db.prepare(`
+      SELECT a.id, a.status, a.created_at,
+             j.title as job_title, j.company as job_company, j.location as job_location
+      FROM applications a
+      LEFT JOIN jobs j ON a.job_id = j.id
+      WHERE a.user_id = ?
+      ORDER BY a.created_at DESC
+    `).all(req.user.userId);
 
-    const formatted = applications.map(a => ({
-      id:           a._id,
-      status:       a.status,
-      created_at:   a.created_at,
-      job_title:    a.job?.title    || '',
-      job_company:  a.job?.company  || '',
-      job_location: a.job?.location || '',
-    }));
-    res.json({ applications: formatted });
+    res.json({ applications });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 // ── GET /api/applications (admin only) ──
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateToken, (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin access required.' });
-    const applications = await Application
-      .find()
-      .populate('job', 'title company')
-      .populate('user', 'full_name email')
-      .sort({ created_at: -1 })
-      .lean();
+    const applications = db.prepare(`
+      SELECT a.*, j.title as job_title, j.company as job_company,
+             u.full_name as user_name, u.email as user_email
+      FROM applications a
+      LEFT JOIN jobs j ON a.job_id = j.id
+      LEFT JOIN users u ON a.user_id = u.id
+      ORDER BY a.created_at DESC
+    `).all();
     res.json({ applications });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -97,13 +99,13 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // ── PATCH /api/applications/:id/status (admin) ──
-router.patch('/:id/status', authenticateToken, async (req, res) => {
+router.patch('/:id/status', authenticateToken, (req, res) => {
   try {
     if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin access required.' });
     const { status } = req.body;
     const valid = ['pending','reviewed','shortlisted','rejected','hired'];
     if (!valid.includes(status)) return res.status(400).json({ error: 'Invalid status.' });
-    await Application.findByIdAndUpdate(req.params.id, { status });
+    db.prepare('UPDATE applications SET status = ? WHERE id = ?').run(status, req.params.id);
     res.json({ message: 'Status updated.' });
   } catch (err) {
     res.status(500).json({ error: err.message });

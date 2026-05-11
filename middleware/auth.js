@@ -1,20 +1,21 @@
 const jwt  = require('jsonwebtoken');
-const { User } = require('../db/mongodb');
+const db   = require('../db/database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_change_me';
 
 // ── Authenticate Token Middleware ──
-async function authenticateToken(req, res, next) {
+function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Authentication required. Please log in.' });
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findOne({ _id: decoded.userId, is_active: true })
-      .select('_id full_name email role').lean();
+    const user = db.prepare(
+      'SELECT id, full_name, email, role FROM users WHERE id = ? AND is_active = 1'
+    ).get(decoded.userId);
     if (!user) return res.status(401).json({ error: 'User account not found or deactivated.' });
-    req.user = { ...user, userId: user._id.toString() };
+    req.user = { ...user, userId: user.id.toString() };
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError') return res.status(401).json({ error: 'Session expired. Please log in again.' });

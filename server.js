@@ -11,8 +11,8 @@ const compression = require('compression');
 const RedisStore = require('rate-limit-redis').default;
 const { redisClient, isRedisConnected } = require('./services/cache');
 const { sanitizeBody } = require('./middleware/auth');
-// ── Connect to MongoDB (triggers auto-seed on first boot) ──
-require('./db/mongodb');
+// ── Initialize SQLite database (auto-seeds on first boot) ──
+require('./db/database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
